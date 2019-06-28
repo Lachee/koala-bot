@@ -98,6 +98,16 @@ namespace KoalaBot.Entities
         }
 
         /// <summary>
+        /// Gets the global counts of messages
+        /// </summary>
+        /// <returns></returns>
+        public async Task<long> GetGlobalCountAsync()
+        {
+            string tallyString = await Redis.FetchStringAsync(Namespace.Combine("global", "posts"), "0");
+            return long.Parse(tallyString);
+        }
+
+        /// <summary>
         /// Syncs the recent changes to the server.
         /// </summary>
         /// <returns></returns>

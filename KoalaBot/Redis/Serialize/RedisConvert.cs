@@ -21,6 +21,8 @@ namespace KoalaBot.Redis.Serialize
 
         private Dictionary<string, string> _hashmapBuffer;
 
+
+        [System.Obsolete("Not used anymore", true)]
         public async Task<T> ReadAsync<T>(Namespace key)
         {
             ////Prepare the type
@@ -39,7 +41,7 @@ namespace KoalaBot.Redis.Serialize
             return default(T);
             //return (T) await serializer.ReadAsync(this, type, null);
         }
-        
+
         /// <summary>
         /// Writes the object to the redis database
         /// </summary>
@@ -48,6 +50,7 @@ namespace KoalaBot.Redis.Serialize
         /// <param name="obj"></param>
         /// <param name="TTL"></param>
         /// <returns></returns>
+        [System.Obsolete("Not used anymore", true)]
         public async Task WriteAsync(Namespace name, object obj, TimeSpan? TTL = null, bool useTransaction = true)
         {
             //Set the connection to a new transaction
@@ -253,7 +256,11 @@ namespace KoalaBot.Redis.Serialize
 
             //Serialize the member if it has an attribute or is forced to serialize.
 			var attribute = member.GetCustomAttribute<RedisPropertyAttribute>();
-            if (attribute == null) attribute = new RedisPropertyAttribute(member.Name);
+            if (attribute == null)
+            {
+                if (member.IsField) return false;
+                attribute = new RedisPropertyAttribute(member.Name);
+            }
 
 			//Prepare its key
 			string key = PrepareKey(attribute, member.Name, subkey);
@@ -376,7 +383,12 @@ namespace KoalaBot.Redis.Serialize
 
 
 			var attribute = member.GetCustomAttribute<RedisPropertyAttribute>();
-            if (attribute == null) attribute = new RedisPropertyAttribute(member.Name);
+            if (attribute == null)
+            {
+                //We will skip fields without propert attributes. They need to be explicitly defined unlike properties that need to be explicitly ignored.
+                if (member.IsField) return;
+                attribute = new RedisPropertyAttribute(member.Name);
+            }
 
 			//Prepare its key
 			string key = PrepareKey(attribute, member.Name, subkey);

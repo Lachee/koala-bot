@@ -8,6 +8,8 @@ using KoalaBot.Redis;
 using KoalaBot.Extensions;
 using KoalaBot.Logging;
 using System.IO;
+using KoalaBot.Permissions.CommandNext;
+using DSharpPlus.Entities;
 
 namespace KoalaBot.Modules
 {
@@ -26,11 +28,51 @@ namespace KoalaBot.Modules
 
         [Command("prefix")]
         [Description("Sets the prefix of the bot for the guild.")]
-        [RequirePermissions(DSharpPlus.Permissions.ManageGuild)]
+        [Permission("koala.config.prefix")]
         public async Task SetPrefix(CommandContext ctx, string prefix)
         {
-            await Bot.UpdatePrefix(ctx.Guild, prefix);
-            await ctx.RespondReactionAsync(true);
+            if (string.IsNullOrWhiteSpace(prefix))
+                throw new ArgumentNullException("prefix", "Prefix cannot be null or empty.");
+
+            //Fetch the settings, update its prefix then save again
+            var settings = await GuildSettings.GetGuildSettingsAsync(ctx.Guild);
+            settings.Prefix = prefix;
+            await settings.SaveAsync();
+
+            //Respond that we did that.
+            await ctx.ReplyReactionAsync(true);
+        }
+
+        [Command("blackbacon"), Aliases("bb")]
+        [Description("Sets the black bacon")]
+        [Permission("koala.config.bb")]
+        public async Task SetBlackBacon(CommandContext ctx, DiscordRole role)
+        {
+            if (role == null)
+                throw new ArgumentNullException("role", "Role cannot be null!");
+
+            //Fetch the settings, update its prefix then save again
+            var settings = await GuildSettings.GetGuildSettingsAsync(ctx.Guild);
+            settings.BlackBaconId = role.Id;
+            await settings.SaveAsync();
+
+            //Respond that we did that.
+            await ctx.ReplyReactionAsync(true);
+        }
+
+
+        [Command("modlog"), Aliases("log")]
+        [Description("Sets the mod log channel")]
+        [Permission("koala.config.modlog")]
+        public async Task SetBlackBacon(CommandContext ctx, DiscordChannel channel)
+        {
+            //Fetch the settings, update its prefix then save again
+            var settings = await GuildSettings.GetGuildSettingsAsync(ctx.Guild);
+            settings.ModLogId = (channel?.Id).GetValueOrDefault(0);
+            await settings.SaveAsync();
+
+            //Respond that we did that.
+            await ctx.ReplyReactionAsync(true);
         }
 
         [Command("sync_tally")]
@@ -39,41 +81,7 @@ namespace KoalaBot.Modules
         public async Task SyncTallies(CommandContext ctx)
         {
             await Bot.MessageCounter.SyncChanges();
-            await ctx.RespondReactionAsync(true);
+            await ctx.ReplyReactionAsync(true);
         }
-
-        [Command("avatar")]
-        [RequireOwner]
-        [Hidden]
-        public async Task SetAvatar(CommandContext ctx, [RemainingText] string avatar = null)
-        {
-            await ctx.TriggerTypingAsync();
-
-            if (!string.IsNullOrWhiteSpace(avatar))
-            {
-                avatar = Bot.Configuration.Resources + "avatar\\" + avatar;
-                Logger.Log("Setting avatar to " + avatar);
-            }
-            else
-            {
-                //Get all files
-                string[] files = Directory.GetFiles(Bot.Configuration.Resources + "avatar\\", "*.png");
-
-                //Pick a random one
-                Random random = new Random();
-                avatar = files[random.Next(files.Length)];
-                Logger.Log("Setting random avatar to " + avatar);
-            }
-
-
-            //Set it
-            using (FileStream stream = new FileStream(avatar, FileMode.Open, FileAccess.Read))
-                await ctx.Client.UpdateCurrentUserAsync(avatar: stream);
-
-            //Respond
-            await ctx.RespondReactionAsync(true);
-            await ctx.RespondWithFileAsync(avatar, "Wenk");
-        }
-
     }
 }

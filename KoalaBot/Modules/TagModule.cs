@@ -9,10 +9,13 @@ using KoalaBot.Extensions;
 using KoalaBot.Logging;
 using DSharpPlus.Entities;
 using KoalaBot.Permissions;
+using KoalaBot.Permissions.CommandNext;
+using System.Linq;
 
 namespace KoalaBot.Modules
 {
     [Group("tag")]
+    [Permission("koala.tag")]
     public class TagModule : BaseCommandModule
     {
         public Koala Bot { get; }
@@ -42,7 +45,7 @@ namespace KoalaBot.Modules
                 throw new Exception("You cannot remove someone else's tag.");
 
             await RemoveTagAsync(ctx.Guild, tag);
-            await ctx.RespondReactionAsync(true);
+            await ctx.ReplyReactionAsync(true);
         }
 
         [Command("create")]
@@ -91,7 +94,7 @@ namespace KoalaBot.Modules
             Tag tag = await GetTagAsync(ctx.Guild, name);
             if (tag == null)
             {
-                await ctx.RespondReactionAsync(false);
+                await ctx.ReplyReactionAsync(false);
                 return;
             }
 

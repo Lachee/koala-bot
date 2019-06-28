@@ -247,7 +247,7 @@ namespace KoalaBot.Redis
 
     public class StackExchangeClient : StackExchangeConnection, IRedisClient
     {
-        private ConnectionMultiplexer redis;
+        public ConnectionMultiplexer ConnectionMultiplexer { get; }
         public IDatabase Database { get; }
         public Logging.Logger Logger { get; }
 
@@ -256,10 +256,20 @@ namespace KoalaBot.Redis
             Logger = logger ?? new Logging.Logger("REDIS", null);
 
             Logger.Log("Connecting to Redis: {0}", host);
-            redis = ConnectionMultiplexer.Connect(host );
+            ConnectionMultiplexer = ConnectionMultiplexer.Connect(host);
 
             Logger.Log("Getting Database {0}", db);
-            DatabaseAsync = Database = redis.GetDatabase(db);
+            DatabaseAsync = Database = ConnectionMultiplexer.GetDatabase(db);
+        }
+
+        /// <summary>
+        /// Gets an enumerable list of servers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<IServer> GetServersEnumable()
+        {
+            foreach (var endpoint in ConnectionMultiplexer.GetEndPoints())
+                yield return ConnectionMultiplexer.GetServer(endpoint); 
         }
 
 		/// <summary>
@@ -282,7 +292,7 @@ namespace KoalaBot.Redis
         /// </summary>
         public void Dispose()
         {
-            redis.Dispose();
+            ConnectionMultiplexer.Dispose();
         }
     }
 

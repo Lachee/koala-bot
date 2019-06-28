@@ -6,6 +6,16 @@ namespace KoalaBot.Exceptions
 {
     class PermissionException : Exception
     {
-        public PermissionException(string message) : base(message) { }
+        public string Permission { get; set; }
+
+        public PermissionException(string permission) : base("Invalid Permission.")
+        {
+            Permission = permission;
+        }
+
+        public PermissionException(string message, string permission) : base(message)
+        {
+            Permission = permission;
+        }
     }
 }

@@ -4,6 +4,7 @@ using KoalaBot.Permissions;
 using KoalaBot.Redis;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,7 +47,9 @@ namespace KoalaBot.Entities
             Bot.Discord.GuildAvailable += (args) =>
             {
                 Logger.Log("Loading Guild {0}", args.Guild);
-                _guilds.Add(args.Guild.Id, new GuildManager(Bot, args.Guild, Logger.CreateChild(args.Guild.Name)));
+                var gm = new GuildManager(Bot, args.Guild, Logger.CreateChild(args.Guild.Name));
+                gm.GroupSaved += OnGroupSaved;
+                _guilds.Add(args.Guild.Id, gm);
                 return Task.CompletedTask;
             };
 
@@ -61,7 +64,7 @@ namespace KoalaBot.Entities
             {
                 Logger.Log("Deleting Member {0}", args.Member);
                 var manager = GetGuildManager(args.Guild);
-                var group = await manager.GetUserGroupAsync(args.Member);
+                var group = await manager.GetMemberGroupAsync(args.Member);
                 await group.DeleteAsync();
             };
 
@@ -74,6 +77,55 @@ namespace KoalaBot.Entities
             };
         }
 
+        private async Task OnGroupSaved(Permissions.Events.GroupEventArgs e)
+        {
+            if (e.Group is MemberGroup mg)
+                await this.ApplyRolesAsync(mg.Member);
+        }
+
         public GuildManager GetGuildManager(DiscordGuild guild) => _guilds[guild.Id];
+        public GuildManager GetGuildManager(DiscordMember member) => GetGuildManager(member.Guild);
+        public Task<MemberGroup> GetMemberGroupAsync(DiscordMember member) => GetGuildManager(member).GetMemberGroupAsync(member);
+
+
+        public async Task ApplyRolesAsync(DiscordMember member)
+        {
+            Logger.Log("Sync Roles for {0}", member);
+
+            //Get all the role groups
+            var mg = await GetMemberGroupAsync(member);
+            var permissions = await mg.EvaluatePermissionChildrenAsync("group.role");
+
+            //Custom collapse
+            Dictionary<string, State> collapsed = new Dictionary<string, State>(permissions.Count);
+            foreach(var p in permissions)
+            {
+                if (p.name.Length <= 11)
+                {
+                    //This is a universal modifier for all previous roles
+                    foreach (var permname in collapsed.Keys.ToList())
+                        collapsed[permname] = p.state;
+                }
+                else
+                {
+                    //We are a normal thingy
+                    if (collapsed.TryGetValue(p.name, out var state))
+                    {
+                        if (p.state != State.Unset)
+                            collapsed[p.name] = p.state;
+                    }
+                    else
+                    {
+                        collapsed.Add(p.name, p.state);
+                    }
+                }
+            }
+
+            //Get the ID's
+            var roleIds = collapsed.Where(kp => kp.Value != State.Deny).Select(kp => kp.Key.Substring(11)).ToHashSet();
+
+            //Apply the permissions
+            await member.ReplaceRolesAsync(member.Guild.Roles.Values.Where(role => roleIds.Contains(role.Id.ToString())), reason: "Permission Sync");
+        }
     }
 }

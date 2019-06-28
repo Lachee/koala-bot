@@ -28,13 +28,17 @@ namespace KoalaBot.Extensions
             {
                 //Aggregate exceptions, we should log the first one only.
                 AggregateException aggregate = exception as AggregateException;
-                builder.Description = string.Format("An `AggregateException` has occured. Here is the first inner exception: ```{0}``` " + (showStackTrace ? "**Stacktrace** ```haskell\n{1}\n```" : ""),
-                    aggregate.InnerException.Message, aggregate.InnerException.StackTrace);
+                builder.Description = string.Format("An `AggregateException` occured. Inner `{2}`: \n```{0}``` " + (showStackTrace ? "**Stacktrace** ```haskell\n{1}\n```" : "{1}"), 
+                    aggregate.InnerException.Message,
+                    showStackTrace ? aggregate.InnerException.StackTrace : "", 
+                    aggregate.InnerException.GetType().Name);
             }
             else
             {
-                builder.Description = string.Format("An exception has occured: ```{0}``` " + (showStackTrace ? "**Stacktrace** ```haskell\n{1}\n```" : ""), 
-                    exception.Message, exception.StackTrace);
+                builder.Description = string.Format("An `{2}` has occured: \n```{0}``` " + (showStackTrace ? "**Stacktrace** ```haskell\n{1}\n```" : "{1}"), 
+                    exception.Message,
+                    showStackTrace ? exception.StackTrace : "", 
+                    exception.GetType().Name);
             }
 
             return builder;

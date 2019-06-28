@@ -1,0 +1,57 @@
+﻿group.default:
+	
+
+\bb setup @BlackBacon -> GetGroupAsync("bb").AddPermission("-group.role").AddPermission("+group.role.@BlackBacon");
+
+Black Bacon
+Silence
+Demote / Premote
+Nickname
+Ban
+Kick
+
+
+
+group.blackbacon:	I will store previous roles before applying this one.
+	-group.role
+	+group.role.bb
+
+group.boss
+	
+group.communitystaff
+	+koala.blackbacon
+	+koala.silence
+
+group.starboundstaff
+
+group.minecraftstaff
+	+group.minecraft
+	+koala.silence.minecraft
+
+group.roleplaystaff
+	+group.starbound
+	+koala.silence.luxgeneral
+
+group.contributors
+
+group.donators
+	+group.role.dontator
+
+group.booster
+	+group.donators
+	+group.role.booster
+	+koala.emoji.1
+
+group.tastyclub
+	+group.dontators
+	+group.role.tastyclub
+
+group.starbound
+
+group.minecraft
+
+group.albionoffice
+	+koala.silence.albion
+
+group.albion
+

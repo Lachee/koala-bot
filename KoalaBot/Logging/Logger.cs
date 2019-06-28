@@ -206,6 +206,16 @@ namespace KoalaBot.Logging
 			}
 		}
 
+        /// <summary>
+        /// Logs and event exception
+        /// </summary>
+        /// <param name="evname"></param>
+        /// <param name="ex"></param>
+        public void LogEventException(string evname, Exception ex)
+        {
+            this.LogError(ex, evname + " threw an exception.");
+        }
+
         // Format Helping
         private string FormatMessage(string format, params object[] args)
         {

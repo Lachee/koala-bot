@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using KoalaBot;
+using KoalaBot.Database;
 
 namespace KoalaBot
 {
@@ -11,6 +12,12 @@ namespace KoalaBot
     {
         static void Main(string[] args)
         {
+            //
+            //
+            //if (success)
+            //{
+            //}
+
             using (var tokenSource = new CancellationTokenSource())
             {
                 Console.WriteLine("Starting Bot...");
@@ -102,6 +109,9 @@ namespace KoalaBot
                     await File.WriteAllTextAsync(config.TokenFile, "<BOT TOKEN HERE>");
                 return;
             }
+
+            //var db = new DatabaseClient(config.SQL.Address, config.SQL.Database, config.SQL.Username, config.SQL.Password, "k_", 3306);
+            //var success = db.OpenAsync().Result;
 
             //Create the instance
             Console.WriteLine("Creating Bot...");
