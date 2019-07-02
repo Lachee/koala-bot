@@ -42,6 +42,7 @@ namespace KoalaBot
         public PermissionManager PermissionManager { get; }
         public ReplyManager ReplyManager { get; }
 
+
         #region Initialization
         public Koala(BotConfig config)
         {
