@@ -20,6 +20,9 @@ using DSharpPlus.CommandsNext.Exceptions;
 using System.Linq;
 using KoalaBot.Ticker;
 using KoalaBot.Database;
+using KoalaBot.Starwatch;
+using KoalaBot.CommandNext;
+using DSharpPlus.Interactivity;
 
 namespace KoalaBot
 {
@@ -31,8 +34,11 @@ namespace KoalaBot
         public static Koala Bot { get; private set; }
 
         public BotConfig Configuration { get; }
-        public DiscordClient Discord { get; }
+        public DiscordClient Discord { get; } 
+
+        public InteractivityExtension Interactivity { get; }
         public CommandsNextExtension CommandsNext { get; }
+
         public Logger Logger { get; }
         public IRedisClient Redis { get; }
         public DbContext DbContext { get; }
@@ -41,7 +47,7 @@ namespace KoalaBot
         public ModerationManager ModerationManager { get; }
         public PermissionManager PermissionManager { get; }
         public ReplyManager ReplyManager { get; }
-
+        public StarwatchClient Starwatch { get; }
 
         #region Initialization
         public Koala(BotConfig config)
@@ -58,6 +64,9 @@ namespace KoalaBot
 
             Logger.Log("Creating new Database Client");
             this.DbContext = new DbContext(config.SQL, logger: Logger.CreateChild("DB"));
+
+            Logger.Log("Creating Starwatch Client");
+            this.Starwatch = new StarwatchClient(config.Starwatch.Host, config.Starwatch.Username, config.Starwatch.Password);
 
             //Configure Discord
             Logger.Log("Creating new Bot Configuration");
@@ -90,9 +99,18 @@ namespace KoalaBot
             this.CommandsNext = this.Discord.UseCommandsNext(new CommandsNextConfiguration() { PrefixResolver = ResolvePrefix, Services = deps });
             this.CommandsNext.RegisterConverter(new PermissionGroupConverter());
             this.CommandsNext.RegisterConverter(new PermissionMemberGroupConverter());
+            this.CommandsNext.RegisterConverter(new QueryArgumentConverter());
+            this.CommandsNext.RegisterConverter(new CommandQueryArgumentConverter());
             this.CommandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
             this.CommandsNext.CommandExecuted += HandleCommandExecuteAsync;
-            
+
+            Logger.Log("Creating Interactivity");
+            this.Interactivity = this.Discord.UseInteractivity(new InteractivityConfiguration()
+            {
+                PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore,
+                PaginationDeletion = DSharpPlus.Interactivity.Enums.PaginationDeletion.DeleteEmojis
+            });
+
             //Catch when any errors occur in the command handler
             //Send any command errors back after logging it.
             Logger.Log("Registering Error Listeners");
@@ -247,6 +265,8 @@ namespace KoalaBot
                     //We will be silent about missing permissions unless we are admin rank
                     if (e.Context.Member.Roles.Any(role => role.Permissions.HasPermission(DSharpPlus.Permissions.ManageRoles | DSharpPlus.Permissions.Administrator)))
                         await e.Context.ReplyAsync($"You require the `{pcfe.Permission}` permission to use this command.");
+                    else
+                        await e.Context.ReplyReactionAsync("🙅");
 
                     //Save the execution to the database
                     await (new CommandLog(e.Context, failure: $"bad permission. Needs {pcfe.Permission}.")).SaveAsync(DbContext);

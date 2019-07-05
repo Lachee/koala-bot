@@ -37,9 +37,18 @@ namespace KoalaBot
             DefaultImport = "koala.sql"
         };
 
+        public StarwatchConfig Starwatch { get; set; } = new StarwatchConfig();
+        public class StarwatchConfig
+        {
+            public string Host { get; set; } = "http://localhost:8000/";
+            public string Username { get; set; } = "bot_accbound";
+            public string Password { get; set; } = "someoriginalpassword";
+        }
+
         public ulong ErrorWebhook { get; set; } = 545911071085428746L;
         public int MessageCounterSyncRate { get; set; } = 60;
-        
-	}
+
+      
+    }
 
 }

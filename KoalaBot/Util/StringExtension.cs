@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace KoalaBot.Util
 {
@@ -34,6 +36,34 @@ namespace KoalaBot.Util
             if (timespan.TotalMinutes >= 1) return Math.Round(timespan.TotalMinutes) + " Minute" + (timespan.TotalMinutes != 1 ? "s" : "");
             if (timespan.TotalSeconds >= 1) return Math.Round(timespan.TotalSeconds) + " Second" + (timespan.TotalSeconds != 1 ? "s" : "");
             return Math.Round(timespan.TotalMilliseconds) + "ms";
+        }
+
+        /// <summary>
+        /// Calculates the MD5 hash of a string
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string CalculateMD5(this string input)
+        {
+            using (MD5 md5Hash = MD5.Create())
+            {
+                // Convert the input string to a byte array and compute the hash.
+                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+                // Create a new Stringbuilder to collect the bytes
+                // and create a string.
+                StringBuilder sBuilder = new StringBuilder();
+
+                // Loop through each byte of the hashed data 
+                // and format each one as a hexadecimal string.
+                for (int i = 0; i < data.Length; i++)
+                {
+                    sBuilder.Append(data[i].ToString("x2"));
+                }
+
+                // Return the hexadecimal string.
+                return sBuilder.ToString();
+            }
         }
     }
 }
