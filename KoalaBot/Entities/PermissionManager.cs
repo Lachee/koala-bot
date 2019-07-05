@@ -49,7 +49,7 @@ namespace KoalaBot.Entities
                 Logger.Log("Loading Guild {0}", args.Guild);
                 var gm = new GuildManager(Bot, args.Guild, Logger.CreateChild(args.Guild.Name));
                 gm.GroupSaved += OnGroupSaved;
-                _guilds.Add(args.Guild.Id, gm);
+                _guilds[args.Guild.Id] = gm;
                 return Task.CompletedTask;
             };
 
@@ -125,7 +125,8 @@ namespace KoalaBot.Entities
             var roleIds = collapsed.Where(kp => kp.Value != State.Deny).Select(kp => kp.Key.Substring(11)).ToHashSet();
 
             //Apply the permissions
-            await member.ReplaceRolesAsync(member.Guild.Roles.Values.Where(role => roleIds.Contains(role.Id.ToString())), reason: "Permission Sync");
+            if (!member.Roles.Select(r => r.Id.ToString()).Intersect(roleIds).Any())
+                await member.ReplaceRolesAsync(member.Guild.Roles.Values.Where(role => roleIds.Contains(role.Id.ToString())), reason: "Permission Sync");
         }
     }
 }

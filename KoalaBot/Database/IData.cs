@@ -7,7 +7,7 @@ namespace KoalaBot.Database
 {
     public interface IData
     {
-        Task LoadAsync(DatabaseClient db);
-        Task SaveAsync(DatabaseClient db);
+        Task LoadAsync(DbContext db);
+        Task SaveAsync(DbContext db);
     }
 }

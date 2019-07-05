@@ -5,11 +5,16 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using KoalaBot;
 using KoalaBot.Database;
+using System.Diagnostics;
 
 namespace KoalaBot
 {
     class Program
     {
+
+        private static string configFile = "config.json";
+        private static string logFile = "koala.log";
+
         static void Main(string[] args)
         {
             //
@@ -36,6 +41,7 @@ namespace KoalaBot
                             default:
                                 Console.WriteLine("Unkown Command " + prts[0]);
                                 break;
+                                
 
                             case "quit":
                             case "exit":
@@ -56,8 +62,6 @@ namespace KoalaBot
         static async Task MainAsync(string[] args, CancellationToken cancellationToken)
         {
             //prepare the config
-            string configFile = "config.json";
-            string logFile = "koala.log";
             bool appendLog = false;
 
             for (int i = 0; i < args.Length; i++)

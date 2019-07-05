@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using KoalaBot.Extensions;
 using KoalaBot.Logging;
 using KoalaBot.Redis;
 using System;
@@ -45,10 +46,15 @@ namespace KoalaBot.Entities
             var command = e.Message.Content.Substring(mpos);
             var cmd = Bot.CommandsNext.FindCommand(command, out var args);
             if (cmd == null) return;
-            
-            //Create a context and execute the command
-            var fctx = Bot.CommandsNext.CreateContext(e.Message, pfx, cmd, args);
-            await Bot.CommandsNext.ExecuteCommandAsync(fctx).ConfigureAwait(false);
+
+            //Make sure the user has permission to replay
+            var member = e.Message.GetMember();
+            if (member != null && await member.HasPermissionAsync("koala.reply." + e.Channel.Id))
+            {
+                //Create a context and execute the command
+                var fctx = Bot.CommandsNext.CreateContext(e.Message, pfx, cmd, args);
+                await Bot.CommandsNext.ExecuteCommandAsync(fctx).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -166,9 +172,28 @@ namespace KoalaBot.Entities
         /// <returns></returns>
         public async Task<Reply> GetReplyFromEditAsync(DiscordMessage editedMessage)
         {
-            string key = Namespace.Combine(editedMessage.Channel.Guild, "replies", editedMessage);
+            return await GetReplyAsync(editedMessage.Channel.GuildId, editedMessage.Id);
+        }
+
+        /// <summary>
+        /// Gets a reply given the guild and message id
+        /// </summary>
+        /// <param name="guildId"></param>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
+        public async Task<Reply> GetReplyAsync(ulong guildId, ulong messageId)
+        {
+            string key = GetReplyRedisNamespace(guildId, messageId);
             return await Redis.FetchObjectAsync<Reply>(key);
         }
+        
+        /// <summary>
+        /// Gets the namespace that the reply would be stored under.
+        /// </summary>
+        /// <param name="guildId"></param>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
+        private string GetReplyRedisNamespace(ulong guildId, ulong messageId) => Namespace.Combine(guildId, "replies", messageId);
 
         /// <summary>
         /// Stores a reply reaction
@@ -179,7 +204,7 @@ namespace KoalaBot.Entities
         public async Task StoreReplyAsync(CommandContext ctx, DiscordMessage message)
         {
             //Store the redis object
-            string key = Namespace.Combine(ctx.Guild, "replies", ctx.Message);
+            string key = GetReplyRedisNamespace(ctx.Guild.Id, ctx.Message.Id);
             await Redis.StoreObjectAsync(key, new Reply()
             {
                 CommandMsg = ctx.Message.Id,
@@ -206,19 +231,6 @@ namespace KoalaBot.Entities
                 ResponseType = Reply.SnowflakeType.Reaction
             });
             await Redis.SetExpiryAsync(key, ReplyTimeout);
-        }
-    }
-
-    public class Reply
-    {
-        public ulong CommandMsg { get; set; }
-        public ulong ResponseMsg { get; set; }
-        public string ResponseEmote { get; set; }
-        public SnowflakeType ResponseType { get; set; }
-        public enum SnowflakeType
-        {
-            Message,
-            Reaction
         }
     }
 }

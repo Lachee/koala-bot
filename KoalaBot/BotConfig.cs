@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using KoalaBot.Database;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,15 +27,15 @@ namespace KoalaBot
             public string Prefix = "koala";
         }
 
-        public SqlConfig SQL { get; set; } = new SqlConfig();
-        public class SqlConfig
+        public ConnectionSettings SQL { get; set; } = new ConnectionSettings()
         {
-            public string Address = "192.168.1.20";
-            public string Username = "root";
-            public string Password = "root";
-            public string Database = "koaladb";
-            public string Prefix = "k_";
-        }
+            Host = "192.168.1.20",
+            Username = "root",
+            Database = "koaladb",
+            Password = "root",
+            Prefix = "k_",
+            DefaultImport = "koala.sql"
+        };
 
         public ulong ErrorWebhook { get; set; } = 545911071085428746L;
         public int MessageCounterSyncRate { get; set; } = 60;

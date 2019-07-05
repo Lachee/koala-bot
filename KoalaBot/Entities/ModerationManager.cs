@@ -20,8 +20,11 @@ namespace KoalaBot.Entities
     {
         public Koala Bot { get; }
         public IRedisClient Redis => Bot.Redis;
-        public DatabaseClient Db => Bot.Database;
+        public DbContext DbContext => Bot.DbContext;
         public Logger Logger { get; }
+
+        //Note: these are not guild prefixed. They really should be.
+        private HashSet<ulong> _handledBans = new HashSet<ulong>();
 
         public ModerationManager(Koala bot, Logger logger = null)
         {
@@ -50,6 +53,35 @@ namespace KoalaBot.Entities
                     await Bot.PermissionManager.ApplyRolesAsync(evt.Member);
                 }
             };
+
+            bot.Discord.GuildBanRemoved += async (evt) =>
+            {
+                _handledBans.Remove(evt.Member.Id);
+            };
+
+            bot.Discord.GuildBanAdded += async (evt) =>
+            {
+                if (!_handledBans.Remove(evt.Member.Id))
+                {
+                    var logs = await evt.Guild.GetAuditLogsAsync(action_type: AuditLogActionType.Ban);
+                    var log = logs.Select(l => l as DiscordAuditLogBanEntry).Where(l => l?.Target == evt.Member).FirstOrDefault();
+                    if (log != null)
+                    {
+                        //Record the ban
+                        await RecordModerationAsync("ban", evt.Guild, evt.Member, moderator: log.UserResponsible, reason: log.Reason);
+                        if (!log.UserResponsible.IsBot)
+                        {
+                            var member = await evt.Guild.GetMemberAsync(log.UserResponsible);
+                            await member.SendMessageAsync("**Moderation Failure**\nYou have moderated the server " + evt.Guild.Name + " without using me. Please use the `mod` commands next time.");
+                        }
+                    }
+                    else
+                    {
+                        //WE have no reason why they were banned, so we will jsut guess
+                        await RecordModerationAsync("ban", evt.Guild, evt.Member, reason: "Unkown Reason.");
+                    }
+                }
+            };
         }
 
         /// <summary>
@@ -63,6 +95,13 @@ namespace KoalaBot.Entities
         {
             await member.RemoveAsync();
             await RecordModerationAsync("kick", moderator, member, reason);
+        }
+
+        public async Task BanMemberAsync(DiscordMember member, int deleteMessages = 0, DiscordMember moderator = null, string reason = null)
+        {
+            _handledBans.Add(member.Id);
+            await member.BanAsync(deleteMessages, reason);
+            await RecordModerationAsync("ban", moderator, member, reason);
         }
 
         /// <summary>
@@ -92,13 +131,40 @@ namespace KoalaBot.Entities
             if (moderator == null)
                 throw new ArgumentNullException("moderator");
 
-
             //Get the moderation log and save it
             ModerationLog log = new ModerationLog(action, moderator, subject, reason);
-            await log.SaveAsync(Db);
+            await log.SaveAsync(DbContext);
+
+            //Report the log
+            await ReportModerationLogAsync(log, moderator.Guild, subject: subject, moderator: moderator);
+
+            return log;
+        }
+
+        public async Task<ModerationLog> RecordModerationAsync(string action, DiscordGuild guild, DiscordUser subject, DiscordUser moderator = null,  string reason = null)
+        {
+            if (string.IsNullOrWhiteSpace(action))
+                throw new ArgumentNullException("action");
+
+            ModerationLog log = new ModerationLog(action, guild, subject, moderator, reason);
+            await log.SaveAsync(DbContext);
+            await ReportModerationLogAsync(log, guild, subject: subject, moderator: moderator);
+            return log;
+        }
+
+        private async Task ReportModerationLogAsync(ModerationLog log, DiscordGuild guild = null, DiscordUser subject = null, DiscordUser moderator = null)
+        {
+            if (guild == null)
+                guild = await Bot.Discord.GetGuildAsync(log.GuildId);
+
+            if (moderator == null && log.ModeratorId > 0)
+                moderator = await Bot.Discord.GetUserAsync(log.ModeratorId);
+
+            if (subject == null && log.SubjectId > 0)
+                subject = await Bot.Discord.GetUserAsync(log.SubjectId);
 
             //Figure out what hte guild modlog folder is
-            var gs = await GuildSettings.GetGuildSettingsAsync(moderator.Guild);
+            var gs = await GuildSettings.GetGuildSettingsAsync(guild);
             if (gs.ModLogId > 0)
             {
                 StringBuilder content = new StringBuilder();
@@ -110,16 +176,16 @@ namespace KoalaBot.Entities
                 if (moderator != null)
                     content.AppendLine($"**Moderator** : {moderator.Mention}  ( {moderator.Id} )");
 
-                if (!string.IsNullOrWhiteSpace(reason))
-                    content.AppendLine($"**Reason**: ```{reason}```");
+                if (!string.IsNullOrWhiteSpace(log.Reason))
+                    content.AppendLine($"**Reason**: ```{log.Reason}```");
 
                 //Send the message and update our log
                 var msg = await gs.GetModLogChannel().SendMessageAsync(content.ToString());
                 log.Message = msg.Id;
-                await log.SaveAsync(Db);
-            }
 
-            return log;
+                //Save the log
+                await log.SaveAsync(DbContext);
+            }
         }
 
         /// <summary>Tries to enforce the nickname of a user</summary>
@@ -251,8 +317,7 @@ namespace KoalaBot.Entities
             await member.ReplaceRolesAsync(new DiscordRole[] { bbrole });
             await Bot.ModerationManager.RecordModerationAsync("blackbacon", moderator, member, reason);
         }
-
-
+        
         /// <summary>
         /// Removes the black bacon role to a user.
         /// </summary>

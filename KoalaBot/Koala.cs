@@ -35,7 +35,7 @@ namespace KoalaBot
         public CommandsNextExtension CommandsNext { get; }
         public Logger Logger { get; }
         public IRedisClient Redis { get; }
-        public DatabaseClient Database { get; }
+        public DbContext DbContext { get; }
         public TickerManager TickerManager { get; }
         public MessageCounter MessageCounter { get; }
         public ModerationManager ModerationManager { get; }
@@ -57,7 +57,7 @@ namespace KoalaBot
             GuildSettings.DefaultPrefix = config.Prefix;
 
             Logger.Log("Creating new Database Client");
-            this.Database = new DatabaseClient(config.SQL.Address, config.SQL.Database, config.SQL.Username, config.SQL.Password, config.SQL.Prefix, logger: Logger.CreateChild("DB"));
+            this.DbContext = new DbContext(config.SQL, logger: Logger.CreateChild("DB"));
 
             //Configure Discord
             Logger.Log("Creating new Bot Configuration");
@@ -91,6 +91,7 @@ namespace KoalaBot
             this.CommandsNext.RegisterConverter(new PermissionGroupConverter());
             this.CommandsNext.RegisterConverter(new PermissionMemberGroupConverter());
             this.CommandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
+            this.CommandsNext.CommandExecuted += HandleCommandExecuteAsync;
             
             //Catch when any errors occur in the command handler
             //Send any command errors back after logging it.
@@ -108,6 +109,13 @@ namespace KoalaBot
         {
             Logger.Log("Initializing Redis");
             await Redis.InitAsync();
+
+            Logger.Log("Initializing DB");
+            if (!string.IsNullOrEmpty(Configuration.SQL.DefaultImport))
+            {
+                Logger.Log("Importing Default DB");
+                await DbContext.ImportSqlAsync(System.IO.Path.Combine(Configuration.Resources, Configuration.SQL.DefaultImport));
+            }
 
             Logger.Log("Connecting to Discord");
             await Discord.ConnectAsync();
@@ -157,7 +165,9 @@ namespace KoalaBot
                 return -1;
             }
         }
-        
+
+
+
         #region Deinitialization
 
         /// <summary>
@@ -177,7 +187,7 @@ namespace KoalaBot
             MessageCounter.Dispose();
             Redis.Dispose();
             Discord.Dispose();
-            Database.Dispose();
+            DbContext.Dispose();
         }
         #endregion
 
@@ -206,11 +216,28 @@ namespace KoalaBot
         }
 
 
+        /// <summary>
+        /// Handles Command Executions.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private async Task HandleCommandExecuteAsync(CommandExecutionEventArgs e)
+        {
+            //Save the execution to the database
+            var cmdlog = new CommandLog(e.Context, failure: null);
+            await cmdlog.SaveAsync(DbContext);
+        }
+
+        /// <summary>
+        /// Handles Failed Executions
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
         private async Task HandleCommandErrorAsync(CommandErrorEventArgs e)
         {
             //Log the exception
             Logger.LogError(e.Exception);
-
+            
             //Check if we have permission
             if (e.Exception is ChecksFailedException cfe)
             {
@@ -219,13 +246,19 @@ namespace KoalaBot
                 {
                     //We will be silent about missing permissions unless we are admin rank
                     if (e.Context.Member.Roles.Any(role => role.Permissions.HasPermission(DSharpPlus.Permissions.ManageRoles | DSharpPlus.Permissions.Administrator)))
-                        await e.Context.RespondAsync($"You require the `{pcfe.Permission}` permission to use this command.");
+                        await e.Context.ReplyAsync($"You require the `{pcfe.Permission}` permission to use this command.");
+
+                    //Save the execution to the database
+                    await (new CommandLog(e.Context, failure: $"bad permission. Needs {pcfe.Permission}.")).SaveAsync(DbContext);
                     return;
                 }
                 else
                 {
                     //Generic bad permissions
                     await e.Context.ReplyExceptionAsync($"You failed the check {first.GetType().Name} and cannot execute the function.");
+
+                    //Save the execution to the database
+                    await (new CommandLog(e.Context, failure: $"Failed {first.GetType().Name} check.")).SaveAsync(DbContext);
                     return;
                 }
             }
@@ -234,16 +267,27 @@ namespace KoalaBot
             if (e.Exception is DSharpPlus.Exceptions.UnauthorizedException)
             {
                 var trace = e.Exception.StackTrace.Split(" in ", 2)[0].Trim().Substring(3);
-                await e.Context.RespondAsync($"I do not have permission to do that, sorry.\n`{trace}`");
+                await e.Context.ReplyAsync($"I do not have permission to do that, sorry.\n`{trace}`");
+
+                //Save the execution to the database
+                await (new CommandLog(e.Context, failure: $"Unauthorized")).SaveAsync(DbContext);
                 return;
             }
 
             //We dont know the command, so just skip
             if (e.Exception is DSharpPlus.CommandsNext.Exceptions.CommandNotFoundException)
+            {
+                //Save the execution to the database
+                await (new CommandLog(e.Context, failure: $"Command Not Found")).SaveAsync(DbContext);
                 return;
+            }
 
             //If all else fails, then we will log it
             await e.Context.ReplyExceptionAsync(e.Exception, false);
+
+            //Save the execution to the database
+            await (new CommandLog(e.Context, failure: $"Exception: {e.Exception.Message}")).SaveAsync(DbContext);
+            return;
         }
     }
 }
