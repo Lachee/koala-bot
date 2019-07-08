@@ -1,6 +1,8 @@
 ﻿using KoalaBot.Starwatch.Entities;
+using KoalaBot.Starwatch.Exceptions;
 using KoalaBot.Util;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,15 +40,55 @@ namespace KoalaBot.Starwatch
         {
             var queries = new Dictionary<string, object>();
             if (!string.IsNullOrEmpty(account))     queries.Add("account", account);
-            if (!string.IsNullOrEmpty(character))   queries.Add("character", character);
+            if (!string.IsNullOrEmpty(character))   queries.Add("username", character);
             if (!string.IsNullOrEmpty(ip))          queries.Add("ip", ip);
             if (!string.IsNullOrEmpty(uuid))        queries.Add("uuid", uuid);
             return await GetRequestAsync<Session[]>("/session", queries);
         }
 
+        /// <summary>
+        /// Gets a protection for the world
+        /// </summary>
+        /// <param name="world"></param>
+        /// <returns></returns>
+        public async Task<Response<Protection>> GetProtectionAsync(World world) => await GetRequestAsync<Protection>($"/world/{world.Whereami}/protection");
 
+        /// <summary>
+        /// Reloads the server settings
+        /// </summary>
+        /// <param name="wait"></param>
+        /// <returns></returns>
+        public async Task<RestResponse> ReloadAsync(bool wait)
+        {
+            return await PutRequestAsync<object>("/server", new Dictionary<string, object>() { ["async"] = !wait });
+        }
 
+        /// <summary>
+        /// Restarts the server
+        /// </summary>
+        /// <param name="reason"></param>
+        /// <param name="wait"></param>
+        /// <returns></returns>
+        public async Task<RestResponse> RestartAsync(string reason, bool wait)
+        {
+            return await DeleteRequestAsync<object>("/server", new Dictionary<string, object>() { ["reason"] = reason, ["async"] = !wait });
+        }
 
+        /// <summary>
+        /// Gets the protected account
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        public async Task<Response<ProtectedAccount>> GetProtectionAccountAsync(World world, string account) => await GetRequestAsync<ProtectedAccount>($"/world/{world.Whereami}/protection/{account}");
+
+        /// <summary>
+        /// Gets the statistics of the server
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Response<Statistics>> GetStatisticsAsync() => await GetRequestAsync<Statistics>("/server/statistics");
+
+        #region Request Fetching
         /// <summary>
         /// Sends a GET request to a specified endpoint.
         /// </summary>
@@ -54,7 +96,7 @@ namespace KoalaBot.Starwatch
         {
             return await GetRequestAsync<object>(endpoint);
         }
-
+        
         /// <summary>
         /// Sends a GET request to a specified endpoint.
         /// </summary>
@@ -63,9 +105,64 @@ namespace KoalaBot.Starwatch
         /// <returns></returns>
         private async Task<Response<T>> GetRequestAsync<T>(string endpoint, IEnumerable<KeyValuePair<string, object>> queries = null)
         {
-            var url = BuildUrl(endpoint, queries);
-            string json = await _client.GetStringAsync(url);
-            return JsonConvert.DeserializeObject<Response<T>>(json);
+            Uri url = BuildUrl(endpoint, queries);
+            var response = await _client.GetAsync(url);
+            return await ProcessResponseMessage<T>(response);
+        }
+
+        /// <summary>
+        /// Sends a PUT request to a specific endpoint
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endpoint"></param>
+        /// <param name="queries"></param>
+        /// <returns></returns>
+        private async Task<Response<T>> PutRequestAsync<T>(string endpoint, IEnumerable<KeyValuePair<string, object>> queries = null)
+        {
+            Uri url = BuildUrl(endpoint, queries);
+            var response = await _client.GetAsync(url);
+            return await ProcessResponseMessage<T>(response);
+        }
+
+        /// <summary>
+        /// Sends a DELETE request to a specific endpoint
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="endpoint"></param>
+        /// <param name="queries"></param>
+        /// <returns></returns>
+        private async Task<Response<T>> DeleteRequestAsync<T>(string endpoint, IEnumerable<KeyValuePair<string, object>> queries = null)
+        {
+            Uri url = BuildUrl(endpoint, queries);
+            var response = await _client.DeleteAsync(url);
+            return await ProcessResponseMessage<T>(response);
+        }
+
+        private async Task<Response<T>> ProcessResponseMessage<T>(HttpResponseMessage response)
+        {
+            //Read the json
+            string json = await response.Content.ReadAsStringAsync();
+
+            //Return the json object deserialized.
+            var res = JsonConvert.DeserializeObject<Response<JToken>>(json);
+            switch (res.Status)
+            {
+                case RestStatus.Forbidden:
+                    throw new RestForbiddenException(res);
+
+                case RestStatus.RouteNotFound:
+                    throw new RestRouteNotFoundException(res);
+
+                case RestStatus.NotImplemented:
+                    throw new NotImplementedException("Endpoint is not implemented.");
+
+                case RestStatus.TooManyRequests:
+                    throw new RestRateLimitException(new Response<RateLimit>(res));
+
+                //Return the response. Everything else can be handled.
+                default:
+                    return new Response<T>(res);
+            }
         }
 
         private Uri BuildUrl(string endpoint, IEnumerable<KeyValuePair<string, object>> queries)
@@ -80,5 +177,6 @@ namespace KoalaBot.Starwatch
 
             return new Uri(url);
         }
+        #endregion
     }
 }

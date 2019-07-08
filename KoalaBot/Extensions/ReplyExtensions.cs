@@ -1,13 +1,16 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace KoalaBot.Extensions
 {
-    public static class ResponseExtensions
+    public static class ReplyExtensions
     {
         /// <summary>
         /// Responds to a message.
@@ -52,6 +55,14 @@ namespace KoalaBot.Extensions
             await ReplyReactionAsync(ctx, success ? "✅" : "❌");
 
         /// <summary>
+        /// Quickly responds to a command message with a hour glass, to indicate its working.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static async Task<DiscordMessage> ReplyWorkingAsync(this CommandContext ctx) =>
+            await ReplyReactionAsync(ctx, "⌛");
+
+        /// <summary>
         /// Quickly responds to the command with a embeded format
         /// </summary>
         /// <param name="ctx"></param>
@@ -89,6 +100,31 @@ namespace KoalaBot.Extensions
             await ctx.ReplyAsync(
                 embed: ctx.ToEmbed()
                 .WithDescription("An error has occured during the {0} command: ```\n{1}\n```", ctx.Command.Name, exception)
-                .WithColor(EmbedExtensions.ErrorColour));        
+                .WithColor(EmbedExtensions.ErrorColour));
+
+        /// <summary>
+        /// Replys with a paginated message
+        /// </summary>
+        /// <param name="c"></param>
+        /// <param name="u"></param>
+        /// <param name="pages"></param>
+        /// <param name="emojis"></param>
+        /// <param name="behaviour"></param>
+        /// <param name="deletion"></param>
+        /// <param name="timeoutoverride"></param>
+        /// <returns></returns>
+        public static async Task ReplyPaginatedAsync(this CommandContext ctx,  IEnumerable<Page> pages, 
+            PaginationEmojis emojis = null, 
+            PaginationBehaviour behaviour = PaginationBehaviour.Default, 
+            PaginationDeletion deletion = PaginationDeletion.Default, 
+            TimeSpan? timeoutoverride = null)
+        {
+            var m = await ctx.ReplyAsync(pages.First().Content, pages.First().Embed);
+            var timeout = timeoutoverride ?? TimeSpan.FromMinutes(1);
+
+            var ems = emojis ?? new PaginationEmojis();
+            var prequest = new KoalaBot.Interactivity.PaginationRequest(m, ctx.Member, behaviour, deletion, ems, timeout, pages.ToArray());
+            await ctx.Client.GetInteractivity().WaitForCustomPaginationAsync(prequest);
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace KoalaBot.CommandNext
         public Task<Optional<CommandQuery>> ConvertAsync(string value, CommandContext ctx)
         {
             //Get the matches
-            var matches = QueryArgumentConverter.REGEX_MATCH.Matches(value);
+            var matches = QueryConverter.REGEX_MATCH.Matches(value);
             if (matches.Count == 0) return Task.FromResult(Optional.FromNoValue<CommandQuery>());
 
             //Prepare the query
@@ -31,7 +31,7 @@ namespace KoalaBot.CommandNext
         }
     }
 
-    public class QueryArgumentConverter : IArgumentConverter<Query>
+    public class QueryConverter : IArgumentConverter<Query>
     {
         public static Regex REGEX_MATCH = new Regex(@"((\w+)\s?[:=]\s?(\S*)\s*)", RegexOptions.Compiled);
         public Task<Optional<Query>> ConvertAsync(string value, CommandContext ctx)

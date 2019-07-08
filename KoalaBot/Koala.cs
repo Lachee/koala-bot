@@ -99,9 +99,13 @@ namespace KoalaBot
             this.CommandsNext = this.Discord.UseCommandsNext(new CommandsNextConfiguration() { PrefixResolver = ResolvePrefix, Services = deps });
             this.CommandsNext.RegisterConverter(new PermissionGroupConverter());
             this.CommandsNext.RegisterConverter(new PermissionMemberGroupConverter());
-            this.CommandsNext.RegisterConverter(new QueryArgumentConverter());
+            this.CommandsNext.RegisterConverter(new QueryConverter());
             this.CommandsNext.RegisterConverter(new CommandQueryArgumentConverter());
-            this.CommandsNext.RegisterCommands(Assembly.GetExecutingAssembly());
+            this.CommandsNext.RegisterConverter(new Starwatch.CommandNext.WorldConverter());
+
+            var curr = Assembly.GetExecutingAssembly();
+            var part = Assembly.GetAssembly(typeof(Modules.Starwatch.StarwatchModule.ProtectionModule));
+            this.CommandsNext.RegisterCommands(part);
             this.CommandsNext.CommandExecuted += HandleCommandExecuteAsync;
 
             Logger.Log("Creating Interactivity");
