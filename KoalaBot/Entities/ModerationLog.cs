@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KoalaBot.Entities
 {
-    public class ModerationLog : IData
+    public class ModerationLog : IRecord
     {
         public ulong Id { get; private set; }
         public ulong GuildId { get; set; }
@@ -49,9 +49,9 @@ namespace KoalaBot.Entities
             SubjectId = subject.Id;
         }
 
-        public async Task LoadAsync(DbContext db)
+        public async Task<bool> LoadAsync(DbContext db)
         {
-            await db.SelectOneAsync("!modlog", (reader) =>
+            return null != await db.SelectOneAsync("!modlog", (reader) =>
             {
                 Id = (ulong)reader["id"];
                 Action = (string)reader["action"];
@@ -66,7 +66,7 @@ namespace KoalaBot.Entities
             }, new Dictionary<string, object>() { { "id", Id } });
         }
 
-        public async Task SaveAsync(DbContext db)
+        public async Task<bool> SaveAsync(DbContext db)
         {
             var content = new Dictionary<string, object>()
             {
@@ -84,6 +84,7 @@ namespace KoalaBot.Entities
             //Insert the database and update our ID (if we actually inserted)
             var insertedId = await db.InsertUpdateAsync("!modlog", content);
             if (insertedId > 0) Id = (ulong)insertedId;
+            return insertedId > 0;
         }
     }
 }

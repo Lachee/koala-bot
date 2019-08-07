@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using KoalaBot.Entities;
 using KoalaBot.Extensions;
 using KoalaBot.Logging;
 using KoalaBot.Redis;
@@ -9,21 +10,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KoalaBot.Entities
+namespace KoalaBot.Managers
 {
-    public class ReplyManager
+    public class ReplyManager : Manager
     {
         public TimeSpan ReplyTimeout { get; set; }
-        public Koala Bot { get; }
-        public Logger Logger { get; }
-        public IRedisClient Redis => Bot.Redis;
 
         //private Dictionary<ulong, Reply> _memcache;
 
-        public ReplyManager(Koala bot, Logger logger = null)
+        public ReplyManager(Koala bot, Logger logger = null) : base(bot, logger)
         {
-            Bot = bot;
-            Logger = logger ?? new Logger("REPLY");
             ReplyTimeout = TimeSpan.FromDays(1);
 
             //_memcache = new Dictionary<ulong, Reply>(16);

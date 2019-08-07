@@ -100,6 +100,22 @@ namespace KoalaBot.Permissions
             GroupListModifiedAt = DateTime.Now;
             return newGroup;
         }
+        
+        /// <summary>
+        /// Finds all the groups.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<string>> FindGroupsAsync()
+        {
+            string pattern = Namespace.Combine(Guild, "permissions", "*");
+            var keys = await Task.Run(() =>
+            {
+                var redis = Redis as StackExchangeClient;
+                return redis.GetServersEnumable().First().Keys(pattern: pattern).Select(rk => rk.ToString());
+            });
+
+            return keys.Select(k => k.Substring(pattern.Length - 1));
+        }
 
         /// <summary>
         /// Creates a new group and saves it

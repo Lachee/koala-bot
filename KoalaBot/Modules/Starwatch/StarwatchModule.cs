@@ -168,6 +168,14 @@ namespace KoalaBot.Modules.Starwatch
             await ctx.ReplyAsync("```json\n" + json + "\n```");
         }
 
+        [Command("tagged")]
+        [Permission("sw.tagged")]
+        [Description("Breaks down a message tags.")]
+        public async Task TagText(CommandContext ctx, [RemainingText] string text)
+        {
+            TaggedText tt = new TaggedText(text);
+            await ctx.ReplyAsync("**Content Tagged:**\n```\n" + tt.Content + "\n```\n**Breakdown:**\n```\n" + string.Join('\n', tt.Tags.Select(t => t.color + ": " + t.text + "")) + "\n```");
+        }
 
         [Command("upload")]
         [Description("Uploads a world.")]

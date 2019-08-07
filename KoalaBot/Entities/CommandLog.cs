@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace KoalaBot.Entities
 {
-    public class CommandLog : IData
+    public class CommandLog : IRecord
     {
         public long Id { get; private set; }
         public ulong GuildId { get; set; }
@@ -55,25 +55,25 @@ namespace KoalaBot.Entities
             return koala.ReplyManager.GetReplyAsync(GuildId, MessageId);
         }
 
-        public async Task LoadAsync(DbContext db)
+        public async Task<bool> LoadAsync(DbContext db)
         {
-            await db.SelectOneAsync("!cmdlog", (reader) =>
+            return null != await db.SelectOneAsync("!cmdlog", (reader) =>
             {
-                GuildId = (ulong)reader.GetInt64("guild");
-                ChannelId = (ulong)reader.GetInt64("channel");
-                MessageId = (ulong)reader.GetInt64("message");
-                UserId = (ulong)reader.GetInt64("user");
+                GuildId         = reader.GetUInt64("guild");
+                ChannelId       = reader.GetUInt64("channel");
+                MessageId       = reader.GetUInt64("message");
+                UserId          = reader.GetUInt64("user");
 
-                Content = reader.GetString("content");
-                Name = reader.GetString("name");
+                Content         = reader.GetString("content");
+                Name            = reader.GetString("name");
                 AttachmentCount = reader.GetInt32("attachments");
-                Failure = reader.GetString("failure");
-                DateCreated = reader.GetDateTime("date_created");
+                Failure         = reader.GetString("failure");
+                DateCreated     = reader.GetDateTime("date_created");
                 return this;
             }, new Dictionary<string, object>() { { "id", Id } });
         }
 
-        public async Task SaveAsync(DbContext db)
+        public async Task<bool> SaveAsync(DbContext db)
         {
             Dictionary<string, object> columns = new Dictionary<string, object>()
             {
@@ -91,6 +91,7 @@ namespace KoalaBot.Entities
             
             long insertedId = await db.InsertUpdateAsync("!cmdlog", columns);
             if (insertedId > 0) Id = insertedId;
+            return insertedId > 0;
         }
     }
 }

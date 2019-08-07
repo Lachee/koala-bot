@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace KoalaBot.Database
 {
-    public interface IData
+    public interface IRecord
     {
-        Task LoadAsync(DbContext db);
-        Task SaveAsync(DbContext db);
+        Task<bool> LoadAsync(DbContext db);
+        Task<bool> SaveAsync(DbContext db);
     }
 }

@@ -23,10 +23,17 @@ namespace KoalaBot.Redis
         {
             await DatabaseAsync.KeyExpireAsync(key, ttl);
         }
+
         public async Task<bool> RemoveAsync(string key)
         {
             return await DatabaseAsync.KeyDeleteAsync(key);
         }
+
+        public async Task<bool> RemoveAsync(string key, string field)
+        {
+            return await DatabaseAsync.HashDeleteAsync(key, field);
+        }
+
         public async Task<bool> ExistsAsync(string key)
         {
             return await DatabaseAsync.KeyExistsAsync(key);

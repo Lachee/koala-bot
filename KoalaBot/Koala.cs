@@ -23,6 +23,9 @@ using KoalaBot.Database;
 using KoalaBot.Starwatch;
 using KoalaBot.CommandNext;
 using DSharpPlus.Interactivity;
+using KoalaBot.Managers;
+using KoalaBot.Exceptions;
+using System.Net.Http;
 
 namespace KoalaBot
 {
@@ -47,7 +50,10 @@ namespace KoalaBot
         public ModerationManager ModerationManager { get; }
         public PermissionManager PermissionManager { get; }
         public ReplyManager ReplyManager { get; }
+        public ReactRoleManager ReactRoleManager { get; }
         public StarwatchClient Starwatch { get; }
+
+        //public System.Net.Http.HttpC
 
         #region Initialization
         public Koala(BotConfig config)
@@ -77,6 +83,7 @@ namespace KoalaBot
             ModerationManager = new ModerationManager(this);
             PermissionManager = new PermissionManager(this, Logger.CreateChild("PERM"));
             ReplyManager = new ReplyManager(this, Logger.CreateChild("REPLY"));
+            ReactRoleManager = new ReactRoleManager(this, Logger.CreateChild("ROLE"));
             TickerManager = new TickerManager(this, Logger.CreateChild("TICKER")) { Interval = 120 * 1000 };
             TickerManager.RegisterTickers(new ITickable[]
             {
@@ -101,7 +108,7 @@ namespace KoalaBot
             this.CommandsNext.RegisterConverter(new PermissionMemberGroupConverter());
             this.CommandsNext.RegisterConverter(new QueryConverter());
             this.CommandsNext.RegisterConverter(new CommandQueryArgumentConverter());
-            this.CommandsNext.RegisterConverter(new Starwatch.CommandNext.WorldConverter());
+            this.CommandsNext.RegisterConverter(new Starwatch.CommandNext.WorldConverter(this));
 
             var curr = Assembly.GetExecutingAssembly();
             var part = Assembly.GetAssembly(typeof(Modules.Starwatch.StarwatchModule.ProtectionModule));
@@ -120,7 +127,7 @@ namespace KoalaBot
             Logger.Log("Registering Error Listeners");
             this.Discord.ClientErrored += async (error) => await LogException(error.Exception);
             this.CommandsNext.CommandErrored += HandleCommandErrorAsync;
-
+            
             Logger.Log("Done");
         }
 
@@ -285,6 +292,15 @@ namespace KoalaBot
                     await (new CommandLog(e.Context, failure: $"Failed {first.GetType().Name} check.")).SaveAsync(DbContext);
                     return;
                 }
+            }
+
+            //Its a permission exception
+            if (e.Exception is PermissionException pe)
+            {
+                //Save the execution to the database
+                await e.Context.ReplyReactionAsync("🙅");
+                await (new CommandLog(e.Context, failure: $"bad permission. Needs {pe.Permission}.")).SaveAsync(DbContext);
+                return;
             }
 
             //The bot itself is unable to do it.

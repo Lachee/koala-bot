@@ -16,7 +16,7 @@ namespace KoalaBot.Permissions
         protected List<Permission> defines;
 
         public GuildManager Manager { get; }
-        public string Name { get; }
+        public string Name { get;  }
         
         public Group(GuildManager manager, string name, int cacheCapacity = 3)
         {
@@ -25,6 +25,18 @@ namespace KoalaBot.Permissions
             cacheLastModified = DateTime.Now;
             Manager = manager;
             Name = name.ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Copies defines and cache of the group
+        /// </summary>
+        /// <param name="group"></param>
+        protected virtual void CopyGroup(Group group)
+        {
+            defines = new List<Permission>(group.defines);
+
+            if (DO_CACHE) cache = new Dictionary<string, State>(group.cache);
+            cacheLastModified = group.cacheLastModified;
         }
 
 

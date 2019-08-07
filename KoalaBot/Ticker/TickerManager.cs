@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using KoalaBot.Logging;
+using KoalaBot.Managers;
 using KoalaBot.Redis;
 using System;
 using System.Collections.Generic;
@@ -11,13 +12,8 @@ using System.Timers;
 
 namespace KoalaBot.Ticker
 {
-    public class TickerManager : IDisposable
+    public class TickerManager : Manager, IDisposable
     {
-        public Koala Bot { get; }
-        
-        public IRedisClient Redis => Bot.Redis;
-        public DiscordClient Discord => Bot.Discord;
-        public Logger Logger { get; }
         public double Interval { get => timer.Interval; set => timer.Interval = value; }
 
         private int _currentTicker = -1;
@@ -26,10 +22,8 @@ namespace KoalaBot.Ticker
         private object _lock;
 
         public TickerManager(Koala bot, Logger logger = null) : this(bot, new ITickable[0], logger) { }
-        public TickerManager(Koala bot, IEnumerable<ITickable> tickers, Logger logger = null)
+        public TickerManager(Koala bot, IEnumerable<ITickable> tickers, Logger logger = null) : base(bot, logger)
         {
-            Bot = bot;
-            Logger = logger ?? new Logger("TICKER");
             _tickers = new List<ITickable>(tickers);
 
             _lock = new object();

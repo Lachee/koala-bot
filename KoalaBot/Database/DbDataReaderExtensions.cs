@@ -12,6 +12,7 @@ namespace KoalaBot.Database
         public static short GetInt16(this DbDataReader dbReader, string name) => dbReader.GetInt16(dbReader.GetOrdinal(name));
         public static int GetInt32(this DbDataReader dbReader, string name) => dbReader.GetInt32(dbReader.GetOrdinal(name));
         public static long GetInt64(this DbDataReader dbReader, string name) => dbReader.GetInt64(dbReader.GetOrdinal(name));
+        public static ulong GetUInt64(this DbDataReader dbReader, string name) => (ulong) dbReader.GetInt64(dbReader.GetOrdinal(name));
         public static double GetDouble(this DbDataReader dbReader, string name) => dbReader.GetDouble(dbReader.GetOrdinal(name));
         public static float GetFloat(this DbDataReader dbReader, string name) => dbReader.GetFloat(dbReader.GetOrdinal(name));
         public static DateTime GetDateTime(this DbDataReader dbReader, string name) => dbReader.GetDateTime(dbReader.GetOrdinal(name));

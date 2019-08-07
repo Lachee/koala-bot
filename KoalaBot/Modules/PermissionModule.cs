@@ -12,6 +12,8 @@ using System.Linq;
 using KoalaBot.Permissions;
 using System.Diagnostics;
 using KoalaBot.Permissions.CommandNext;
+using System.Collections.Generic;
+using KoalaBot.Managers;
 
 namespace KoalaBot.Modules
 {
@@ -135,7 +137,58 @@ namespace KoalaBot.Modules
             var enumerable = group.ExportEnumerable();
             await ctx.ReplyAsync(group.Name + " Permissions:\n```\n" + string.Join("\n", enumerable) + "\n```");
         }
-        
+
+
+        [Command("export")]
+        [Description("Exports all groups")]
+        public async Task ExportGroup(CommandContext ctx)
+        {
+            var guildManager = PermissionManager.GetGuildManager(ctx.Guild);
+            var groupNames = await guildManager.FindGroupsAsync();
+
+            List<string> lines = new List<string>();
+            long characters = 0;
+            
+            foreach (var groupName in groupNames.OrderBy(l => l))
+            {
+                var g = await guildManager.GetGroupAsync(groupName);
+                lines.Add("");
+                lines.Add(groupName);
+                characters += 2 + groupName.Length;
+
+                foreach (var l in g.ExportEnumerable())
+                {
+                    lines.Add("\t" + l);
+                    characters += 2 + l.Length;
+                }
+
+            }
+
+            if (characters < 1900)
+            {
+                await ctx.ReplyAsync("```\n" + string.Join('\n', lines) + "\n```");
+            }
+            else
+            {
+                string tmppath = "export_" + ctx.Guild.Id + "_" + ctx.Member.Username + ".txt";
+                try
+                {
+                    await System.IO.File.WriteAllLinesAsync(tmppath, lines);
+                    await ctx.RespondWithFileAsync(tmppath, "Exported Groups:");
+                    await ctx.ReplyReactionAsync(true);
+                }
+                catch (Exception)
+                {
+                    await ctx.ReplyReactionAsync(false);
+                }
+                finally
+                {
+                    if (System.IO.File.Exists(tmppath))
+                        System.IO.File.Delete(tmppath);
+                }
+            }
+        }
+
         [Command("import")]
         [Description("Imports a group")]
         [Permission("koala.permissions.group.import")]
@@ -304,11 +357,21 @@ namespace KoalaBot.Modules
             await ctx.ReplyAsync($"**{group.Name}**\n`{permission}` => `{state}`\nTook _{watch.ElapsedMilliseconds}ms_");
         }
 
+        [Command("groups")]
+        public async Task Groups(CommandContext ctx)
+        {
+            var guildManager = PermissionManager.GetGuildManager(ctx.Guild);
+            var groups = await guildManager.FindGroupsAsync();
+            await ctx.ReplyAsync("**Groups:**\n```\n" + string.Join("\n", groups) + "\n```");
+        }
+
         #endregion
 
-        [Command("syncrole")]
-        [Description("Syncronizes the role")]
-        public async Task ApplyRoles(CommandContext ctx, DiscordMember member)
+        [Command("apply"), Aliases("rolesync", "syncrole")]
+        [Description("Applies the roles to the user.")]
+        [Permission("koala.permissions.apply")]
+        public async Task ApplyRoles(CommandContext ctx, 
+            [Description("The user to sync. Leave as null to apply your own roles.")] DiscordMember member = null)
         {
             if (member == null)
                 member = ctx.Member;

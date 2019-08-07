@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using KoalaBot.Database;
+using KoalaBot.Entities;
 using KoalaBot.Extensions;
 using KoalaBot.Logging;
 using KoalaBot.Redis;
@@ -14,22 +15,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace KoalaBot.Entities
+namespace KoalaBot.Managers
 {
-    public class ModerationManager
+    public class ModerationManager : Manager
     {
-        public Koala Bot { get; }
-        public IRedisClient Redis => Bot.Redis;
-        public DbContext DbContext => Bot.DbContext;
-        public Logger Logger { get; }
-
         //Note: these are not guild prefixed. They really should be.
         private HashSet<ulong> _handledBans = new HashSet<ulong>();
 
-        public ModerationManager(Koala bot, Logger logger = null)
+        public ModerationManager(Koala bot, Logger logger = null) : base(bot, logger)
         {
-            this.Bot = bot;
-            this.Logger = logger ?? new Logger("MOD");
 
             bot.Discord.GuildMemberAdded += async (evt) =>
             {
@@ -47,7 +41,7 @@ namespace KoalaBot.Entities
                     await TryEnforceNickname(evt.Member);
 
                 //The roles have changed, enforce it again
-                if (evt.RolesAfter != evt.RolesBefore)
+                if (evt.RolesAfter.Count != evt.RolesBefore.Count || evt.RolesAfter.Intersect(evt.RolesBefore).Count() != evt.RolesAfter.Count)
                 {
                     await TryEnforceBlackBacon(evt.Member);
                     await Bot.PermissionManager.ApplyRolesAsync(evt.Member);

@@ -28,4 +28,13 @@ namespace KoalaBot.Starwatch.Entities
         }
         
     }
+
+    public class ProtectionPatch
+    {
+        public string Name { get; set; }
+        public bool? AllowAnonymous { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Protection.ProtectionMode? Mode { get; set; }
+    }
 }

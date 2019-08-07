@@ -12,6 +12,7 @@ using KoalaBot.Entities;
 using KoalaBot.Exceptions;
 using System.Linq;
 using KoalaBot.Permissions.CommandNext;
+using KoalaBot.Managers;
 
 namespace KoalaBot.Modules
 {

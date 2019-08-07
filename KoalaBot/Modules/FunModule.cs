@@ -64,6 +64,23 @@ namespace KoalaBot.Modules
             }
         }
 
+
+        public async Task SetBoosterEmoji(CommandContext ctx)
+        {
+            if (ctx.Message.Attachments.Count == 0)
+                throw new ArgumentException("Must contain attachement.");
+
+            await SetBoosterEmoji(ctx, ctx.Message.Attachments[0].Url);
+        }
+
+        public async Task SetBoosterEmoji(CommandContext ctx, string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                throw new ArgumentNullException("url");
+
+
+        }
+
         private string DiceRegexReplacer(Match match)
         {
             int tally = 0;

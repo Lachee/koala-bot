@@ -11,10 +11,10 @@ using System.IO;
 using KoalaBot.Permissions.CommandNext;
 using DSharpPlus.Entities;
 
-namespace KoalaBot.Modules
+namespace KoalaBot.Modules.Configuration
 {
     [Group("config")]
-    public class ConfigurationModule : BaseCommandModule
+    public partial class ConfigurationModule : BaseCommandModule
     {
         public Koala Bot { get; }
         public IRedisClient Redis => Bot.Redis;
