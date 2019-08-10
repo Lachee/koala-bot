@@ -77,5 +77,19 @@ namespace KoalaBot.Permissions
             return change;
         }
 
+        public bool ReplaceRoles(IEnumerable<ulong> enumerable)
+        {
+            var enumerated = enumerable.Where(u => u != Member.Guild.EveryoneRole.Id).ToList();
+            var intersection = Roles.Keys.Intersect(enumerated).ToList();
+            bool difference = intersection.Count != Roles.Keys.Count || intersection.Count != enumerated.Count;
+            if (difference)
+            {
+                Roles.Clear();
+                AddRoles(enumerable);
+                return true;
+            }
+
+            return false;
+        }
     }
 }

@@ -123,7 +123,7 @@ namespace KoalaBot.Managers
             //Get all the groups, prepending the existing roles.
             // We will be only getting roles that exist in the current guild.
             var roles = await CalculateMemberRolesAsync(dmg, guildOnly: true);
-            if (dmg.AddRoles(roles))
+            if (dmg.ReplaceRoles(roles))
             {
                 //Make sure we havn't hit max depth
                 if (depth > MAX_ROLE_DEPTH)

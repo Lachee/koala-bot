@@ -142,7 +142,7 @@ namespace KoalaBot.Permissions
         /// <param name="enumerable"></param>
         public virtual void ImportEnumerable(IEnumerable<string> enumerable)
         {
-            foreach (string str in enumerable.Select(l => l.Trim()).Where(l => !string.IsNullOrWhiteSpace(l)))
+            foreach (string str in enumerable.Select(l => l.Trim()).TakeWhile(l => !string.IsNullOrWhiteSpace(l)))
                 defines.Add(Permission.FromString(str));
 
             if (DO_CACHE) cache.Clear();

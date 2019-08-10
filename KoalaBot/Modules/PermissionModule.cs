@@ -189,11 +189,11 @@ namespace KoalaBot.Modules
             }
         }
 
-        [Command("import")]
+        [Command("import-group")]
         [Description("Imports a group")]
         [Permission("koala.permissions.group.import")]
-        public async Task ImportGroup(CommandContext ctx, 
-            [Description("The name of the group to override. Cannot be a user or role group.")] string groupname, 
+        public async Task ImportGroup(CommandContext ctx,
+            [Description("The name of the group to override. Cannot be a user or role group.")] string groupname,
             [RemainingText][Description("The permissions to import, as a multiline codeblock.")] string import)
         {
             string inner = import.Trim('`', '\n');
@@ -206,7 +206,7 @@ namespace KoalaBot.Modules
             //Make sure its not a group or user
             if (groupname.StartsWith("group.role") || groupname.StartsWith("group.user"))
                 throw new ArgumentException("Cannot import role or user groups.");
-            
+
             //Get group, otherwise create
             Group group = await Bot.PermissionManager.GetGuildManager(ctx.Guild).GetGroupAsync(groupname);
             if (group == null)
@@ -218,6 +218,14 @@ namespace KoalaBot.Modules
             //save it
             await group.SaveAsync();
             await ctx.ReplyAsync($"Group Imported: `{group.Name}`");
+        }
+
+        [Command("import")]
+        [Description("Imports all")]
+        [Permission("koala.permissions.group.import")]
+        public async Task ImportAll(CommandContext ctx,
+         [RemainingText][Description("The permissions to import, as a multiline codeblock.")] string import)
+        {
         }
 
         [Command("tree")]
