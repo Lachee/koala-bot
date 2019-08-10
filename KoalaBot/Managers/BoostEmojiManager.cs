@@ -6,6 +6,7 @@ using KoalaBot.Redis;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,8 +37,22 @@ namespace KoalaBot.Managers
             string tmp = Path.GetTempFileName();
             try
             {
-                
-                member.Guild.CreateEmojiAsync
+                BoostEmoji be = new BoostEmoji(member)
+                {
+                    URL = url,
+                    Name = member.Username,
+                };
+
+                using (WebClient client = new WebClient())
+                    await client.DownloadFileTaskAsync(new Uri(url), tmp);
+
+                using (FileStream fs = new FileStream(tmp, FileMode.Open))
+                {
+                    var emoji = await member.Guild.CreateEmojiAsync(be.Name, fs);
+                    be.EmojiId = emoji.Id;
+                }
+
+                await be.SaveAsync(DbContext);
             }
             finally
             {
