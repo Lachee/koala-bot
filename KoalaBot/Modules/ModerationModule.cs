@@ -64,7 +64,7 @@ namespace KoalaBot.Modules
             if (member == null)
                 throw new ArgumentNullException("member");
 
-            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owner.Id)
+            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owners.First().Id)
                 throw new Exception("Cannot kick the owner.");
 
             //TODO: We should make sure the user has permission to kick the role.
@@ -85,7 +85,7 @@ namespace KoalaBot.Modules
             if (member == null)
                 throw new ArgumentNullException("member");
 
-            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owner.Id)
+            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owners.First().Id)
                 throw new Exception("Cannot ban the owner.");
 
             await Manager.BanMemberAsync(member, moderator: ctx.Member, reason: reason);
@@ -147,7 +147,7 @@ namespace KoalaBot.Modules
             if (string.IsNullOrWhiteSpace(reason))
                 throw new ArgumentNullException("Reason cannot be empty.");
 
-            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owner.Id)
+            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owners.First().Id)
                 throw new Exception("Cannot black bacon the owner.");
 
             await Manager.GiveBlackBaconAsync(member, ctx.Member, reason);
@@ -192,7 +192,7 @@ namespace KoalaBot.Modules
             if (string.IsNullOrWhiteSpace(reason))
                 throw new ArgumentNullException("reason");
 
-            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owner.Id)
+            if (member.IsOwner || member.Id == Bot.Discord.CurrentApplication.Owners.First().Id)
                 throw new Exception("Cannot silence the owner.");
 
             //Add the override & add the mod log

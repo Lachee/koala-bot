@@ -58,7 +58,7 @@ namespace KoalaBot.Extensions
             Permission.Record(permission);
 
             //Check the bypasses
-            if (bypassOwner && member.Id == Koala.Bot.Discord.CurrentApplication.Owner.Id)
+            if (bypassOwner && member.Id == Koala.Bot.Discord.CurrentApplication.Owners.First().Id)
                 return State.Allow;
             
             if (bypassAdmin && member.Roles.Any(r => r.Permissions.HasFlag(DSharpPlus.Permissions.Administrator)))
