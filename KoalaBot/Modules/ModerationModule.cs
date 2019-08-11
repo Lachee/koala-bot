@@ -197,7 +197,14 @@ namespace KoalaBot.Modules
 
             //Add the override & add the mod log
             var overwrite = ctx.Channel.PermissionOverwrites.FirstOrDefault(o => o.Id == member.Id && o.Type == DSharpPlus.OverwriteType.Member);
-            await ctx.Channel.AddOverwriteAsync(member, overwrite.Allowed, overwrite.Denied | DSharpPlus.Permissions.SendMessages | DSharpPlus.Permissions.AddReactions);
+            if (overwrite != null)
+            {
+                await ctx.Channel.AddOverwriteAsync(member, overwrite.Allowed, overwrite.Denied | DSharpPlus.Permissions.SendMessages | DSharpPlus.Permissions.AddReactions);
+            }
+            else
+            {
+                await ctx.Channel.AddOverwriteAsync(member, DSharpPlus.Permissions.None, DSharpPlus.Permissions.SendMessages | DSharpPlus.Permissions.AddReactions);
+            }
 
             //TODO: Report reasoning on MySQL
             await ctx.ReplyAsync($"{member.DisplayName} was silenced from this channel: ```{reason}```");
@@ -218,6 +225,9 @@ namespace KoalaBot.Modules
 
             //Add the override & add the mod log
             var overwrite = ctx.Channel.PermissionOverwrites.FirstOrDefault(o => o.Id == member.Id && o.Type == DSharpPlus.OverwriteType.Member);
+            if (overwrite == null)
+                throw new Exception("Member doesn't have an overwrite in this channel.");
+
             await ctx.Channel.AddOverwriteAsync(member, overwrite.Allowed, overwrite.Denied & ~(DSharpPlus.Permissions.SendMessages | DSharpPlus.Permissions.AddReactions));
 
             //TODO: Report reasoning on MySQL
