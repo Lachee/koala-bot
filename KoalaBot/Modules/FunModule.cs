@@ -12,6 +12,7 @@ using KoalaBot.Permissions.CommandNext;
 using DSharpPlus.Entities;
 using System.Text.RegularExpressions;
 using System.Data;
+using System.Linq;
 
 namespace KoalaBot.Modules
 {
@@ -24,7 +25,9 @@ namespace KoalaBot.Modules
         public Koala Bot { get; }
         public IRedisClient Redis => Bot.Redis;
         public Logger Logger { get; }
+
         private Random _diceRandom;
+        private int _explosionTally;
 
         public FunModule(Koala bot)
         {
@@ -40,9 +43,11 @@ namespace KoalaBot.Modules
             //Set the seed and create a new dice random.
             int seed = (int)(ctx.Message.Id % int.MaxValue);
             _diceRandom = new Random(seed);
+            _explosionTally = 0;
 
             //Prepare the expresion and result
-            string expr = Regex.Replace(expression.ToLowerInvariant(), "\\d*[dD]\\d+", DiceRegexReplacer);
+            //string expr = Regex.Replace(expression.ToLowerInvariant(), "\\d*[dD]\\d+", DiceRegexReplacer);
+            string expr = Regex.Replace(expression, "\\d*[dD]\\d+", EvaluateDiceRegex);
             double result = 0;
 
             //Evaluate
@@ -54,8 +59,11 @@ namespace KoalaBot.Modules
                 table.Rows.Add(row);
                 result = double.Parse((string)row["expression"]);
 
+                string explosions = "";
+                if (_explosionTally > 0) explosions += $"\n\nExploded `{_explosionTally}` times";
+
                 //Return the result
-                await ctx.ReplyAsync(content: $"🎲 `{result}`\n        --------\n        `{expression}`\n        `{expr}`");
+                await ctx.ReplyAsync(content: $"🎲 `{result}`\n        --------\n        `{expression}`\n        `{expr}`" + explosions);
             }
             catch (Exception e)
             {
@@ -101,6 +109,81 @@ namespace KoalaBot.Modules
             //return the tally
             return tally.ToString();
         }
+        private string EvaluateDiceRegex(Match match)
+        {
+            List<uint> results = EvaluateDice(match, out var explosions);
+            _explosionTally += explosions;
 
+            return "(" + string.Join('+', results) + ")";
+        }
+
+        /// <summary>
+        /// Evaluates a dice, returning the rolls it made and the number of explosions.
+        /// </summary>
+        /// <param name="match"></param>
+        /// <param name="explosions"></param>
+        /// <returns></returns>
+        private List<uint> EvaluateDice(Match match, out int explosions)
+        {
+
+            uint count, sides;
+            bool exploding;
+            explosions = 0;
+
+            //Parse the dice
+            if (!TryParseDice(match, out sides, out count, out exploding))
+                return null;
+
+            //Prepare the dice and the tally
+            List<uint> rolls    = new List<uint>(1);
+            Random random       = _diceRandom ?? new Random();
+
+            explosions = RollDice(rolls, sides, count, exploding);
+            return rolls;
+        }
+
+        /// <summary>
+        /// Roll a specified sided dice, a specified number of times, exploding it if allowed.
+        /// </summary>
+        /// <param name="rolls">The rolls that have been made</param>
+        /// <param name="sides">The number of sides the dice has.</param>
+        /// <param name="count">The number of dice to roll</param>
+        /// <param name="explodes">Should the dice explode?</param>
+        /// <returns></returns>
+        private int RollDice(List<uint> rolls, uint sides, uint count, bool explodes)
+        {
+            int explosions  = 0;
+            Random random   = _diceRandom ?? new Random();
+
+            for (uint i = 0; i < count; i++)
+            {
+                //Roll the dice and add the results.
+                uint result = (uint) random.Next(1, (int) sides + 1);
+                rolls.Add(result);
+
+                //If the dice explodes, roll the dice again.
+                if (explodes && result == sides)
+                    explosions += 1 + RollDice(rolls, sides, 1, explodes);
+            }
+
+            //Return the number of times we exploded
+            return explosions;
+        }
+
+        private bool TryParseDice(Match match, out uint sides, out uint count, out bool exploding)
+        {
+            string[] parts = match.Value.Split('d', 'D');
+
+            exploding = match.Value.Contains('D');
+            sides = 6;
+            count = 1;
+
+            //Make sure its parsed correctly
+            if (parts.Length != 2) return false;
+            if (!uint.TryParse(parts[0], out count) || count == 0) count = 1;
+            if (!uint.TryParse(parts[1], out sides) || sides <= 1) sides = 6;
+
+            return true;
+        }
     }
 }
