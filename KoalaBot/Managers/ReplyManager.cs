@@ -30,6 +30,8 @@ namespace KoalaBot.Managers
         private async Task HandleCommandsAsync(DSharpPlus.EventArgs.MessageUpdateEventArgs e)
         {
             //Skip if its invalid
+            if (e == null) return;
+            if (e.Author == null) return;
             if (e.Author.IsBot) return;
 
             //Resolve the prefix
