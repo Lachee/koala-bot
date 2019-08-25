@@ -1,10 +1,10 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using KoalaBot.CommandNext;
 using KoalaBot.Extensions;
 using KoalaBot.Logging;
 using KoalaBot.Managers;
-using KoalaBot.Permissions.CommandNext;
 using KoalaBot.Redis;
 using System;
 using System.Collections.Generic;

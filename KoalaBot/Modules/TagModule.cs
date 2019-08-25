@@ -8,9 +8,8 @@ using KoalaBot.Redis;
 using KoalaBot.Extensions;
 using KoalaBot.Logging;
 using DSharpPlus.Entities;
-using KoalaBot.Permissions;
-using KoalaBot.Permissions.CommandNext;
 using System.Linq;
+using KoalaBot.CommandNext;
 
 namespace KoalaBot.Modules
 {

@@ -1,6 +1,9 @@
 ﻿using DSharpPlus.Entities;
+using KoalaBot.Extensions;
 using KoalaBot.Logging;
-using KoalaBot.Permissions;
+using KoalaBot.PermissionEngine;
+using KoalaBot.PermissionEngine.Groups;
+using KoalaBot.PermissionEngine.Store;
 using KoalaBot.Redis;
 using System;
 using System.Collections.Generic;
@@ -36,55 +39,120 @@ namespace KoalaBot.Managers
 
         private const int MAX_ROLE_DEPTH = 50;
 
-        private Dictionary<ulong, GuildManager> _guilds;
+        private Dictionary<ulong, Engine> _guildEngines;
 
         public PermissionManager(Koala bot, Logger logger = null) : base(bot, logger)
         {
-            _guilds = new Dictionary<ulong, GuildManager>();
+            _guildEngines = new Dictionary<ulong, Engine>();
 
             Bot.Discord.GuildAvailable += (args) =>
             {
                 Logger.Log("Loading Guild {0}", args.Guild);
-                var gm = new GuildManager(Bot, args.Guild, Logger.CreateChild(args.Guild.Name));
-                gm.GroupSaved += OnGroupSaved;
-                _guilds[args.Guild.Id] = gm;
+                var gm = new Engine(new RedisStore(Redis, Namespace.Join(Namespace.RootNamespace, args.Guild.Id.ToString(), "perms")));
+                _guildEngines[args.Guild.Id] = gm;
                 return Task.CompletedTask;
             };
 
             Bot.Discord.GuildUnavailable += (args) =>
             {
                 Logger.Log("Clearing Guild {0}", args.Guild);
-                _guilds.Remove(args.Guild.Id);
+                _guildEngines.Remove(args.Guild.Id);
                 return Task.CompletedTask;
             };
 
+            /*
             Bot.Discord.GuildMemberRemoved += async (args) =>
             {
                 Logger.Log("Deleting Member {0}", args.Member);
-                var manager = GetGuildManager(args.Guild);
+                var manager = GetEngine(args.Guild);
                 var group = await manager.GetMemberGroupAsync(args.Member);
                 await group.DeleteAsync();
             };
+            */
 
             Bot.Discord.GuildRoleDeleted += async (args) =>
             {
                 Logger.Log("Deleting Role {0}", args.Role);
-                var manager = GetGuildManager(args.Guild);
-                var group = await manager.GetRoleGroupAsync(args.Role);
-                await group.DeleteAsync();
+                var engine = GetEngine(args.Guild);
+                var group = await engine.GetGroupAsync(args.Role.GetGroupName());
+                if (group != null) await engine.DeleteGroupAsync(group);
             };
+            
+        }
+                
+        public Engine GetEngine(DiscordGuild guild) => _guildEngines[guild.Id];
+        
+        public async Task<MemberGroup> GetMemberGroupAsync(DiscordMember member)
+        {
+            var engine = GetEngine(member.Guild);
+
+            var group = await engine.GetGroupAsync(MemberGroup.GetGroupName(member));
+            if (group is MemberGroup memberGroup) return memberGroup;
+
+            var mg = new MemberGroup(engine, member);
+            await engine.AddGroupAsync(mg);
+            return mg;
         }
 
-        private async Task OnGroupSaved(Permissions.Events.GroupEventArgs e)
+        /// <summary>
+        /// Applies the missing roles too the member. It will also remove roles that have been specifically denied.
+        /// Returns true if a change has occured.
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        public async Task<bool> ApplyRolesAsync(DiscordMember member)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var mg = await GetMemberGroupAsync(member);
+
+            //Get all the group permissions
+            var roleGroups = await mg.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\..*"));
+            var rolesAfter = member.Roles.ToDictionary<DiscordRole, ulong>(r => r.Id);
+            bool changed = false;
+
+            foreach(var group in roleGroups)
+            {
+                ulong id = ulong.Parse(group.GroupName.Substring(5));
+                switch (group.State)
+                {
+                    case StateType.Deny:
+                        if (rolesAfter.Remove(id))
+                            changed = true;
+                        break;
+
+                    case StateType.Allow:
+                        if (!rolesAfter.ContainsKey(id) && member.Guild.Roles.TryGetValue(id, out var tmprole)) 
+                        {
+                            rolesAfter[id] = tmprole;
+                            changed = true;
+                        }
+                        break;
+
+                    default:
+                    case StateType.Unset:
+                        break;
+                }
+
+            }
+
+
+            //Apply the roles
+            if (changed)
+                await member.ReplaceRolesAsync(rolesAfter.Values, "Permission Sync");
+
+            //Tell the world
+            Logger.Log("Synced Group Roles for {0}. Took {1}ms", member, stopwatch.ElapsedMilliseconds);
+
+            //Return the state
+            return true;
+        }
+
+        /*
+        private async Task OnGroupSaved(LegacyPermissions.Events.GroupEventArgs e)
         {
             if (e.Group is MemberGroup mg)
                 await this.ApplyRolesAsync(mg.Member);
         }
-
-        public GuildManager GetGuildManager(DiscordGuild guild) => _guilds[guild.Id];
-        public GuildManager GetGuildManager(DiscordMember member) => GetGuildManager(member.Guild);
-        public Task<MemberGroup> GetMemberGroupAsync(DiscordMember member) => GetGuildManager(member).GetMemberGroupAsync(member);
-
 
         /// <summary>
         /// Applies the missing roles too the member. It will also remove roles that have been specifically denied.
@@ -217,5 +285,6 @@ namespace KoalaBot.Managers
             Logger.Log("Collapsed Roles for {0}, Took {1} ms", mg.Member, stopwatch.ElapsedMilliseconds);
             return rolemap;
         }
+    */
     }
 }

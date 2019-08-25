@@ -77,6 +77,12 @@ namespace KoalaBot.Redis
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Joins the strings without the root namespace
+        /// </summary>
+        /// <param name="folders"></param>
+        /// <returns></returns>
+        public static string Join(params string[] folders) => string.Join(Seperator, folders);
 
         /// <summary>
         /// Creates a completely blank namespace.

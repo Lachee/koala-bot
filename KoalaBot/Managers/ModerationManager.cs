@@ -43,6 +43,7 @@ namespace KoalaBot.Managers
                 //The roles have changed, enforce it again
                 if (evt.RolesAfter.Count != evt.RolesBefore.Count || evt.RolesAfter.Intersect(evt.RolesBefore).Count() != evt.RolesAfter.Count)
                 {
+                   // await TryEnforceBlackBacon(evt.Member);
                     if (!await TryEnforceBlackBacon(evt.Member))
                         await Bot.PermissionManager.ApplyRolesAsync(evt.Member);
                 }

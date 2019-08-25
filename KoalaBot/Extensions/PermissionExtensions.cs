@@ -1,13 +1,14 @@
 ﻿using DSharpPlus.Entities;
 using KoalaBot.Entities;
 using KoalaBot.Exceptions;
-using KoalaBot.Permissions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KoalaBot.PermissionEngine;
+using KoalaBot.PermissionEngine.Groups;
 
 namespace KoalaBot.Extensions
 {
@@ -40,7 +41,7 @@ namespace KoalaBot.Extensions
         {
             //Evaluate the permission and check if its true
             var state = (await CheckPermissionAsync(member, permission, bypassAdmin, bypassOwner));
-            return state == State.Allow || (allowUnset && state == State.Unset);
+            return state == StateType.Allow || (allowUnset && state == StateType.Unset);
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace KoalaBot.Extensions
         /// <param name="bypassAdmin">Should admins always return true?</param>
         /// <param name="bypassOwner">Should owners always return true?</param>
         /// <returns></returns>
-        public static async Task<State> CheckPermissionAsync(this DiscordMember member, string permission, bool bypassAdmin = true, bool bypassOwner = true)
+        public static async Task<StateType> CheckPermissionAsync(this DiscordMember member, string permission, bool bypassAdmin = true, bool bypassOwner = true)
         {
             //Try to add the permission to the attribute. We are doing this so the \perm all command can list dynamically added permissions too
             // Doing it this way results in \perm all being slightly inaccurate, but since it is just a indication anyways it is fine
@@ -59,17 +60,39 @@ namespace KoalaBot.Extensions
 
             //Check the bypasses
             if (bypassOwner && member.Id == Koala.Bot.Discord.CurrentApplication.Owners.First().Id)
-                return State.Allow;
+                return StateType.Allow;
             
             if (bypassAdmin && member.Roles.Any(r => r.Permissions.HasFlag(DSharpPlus.Permissions.Administrator)))
-                return State.Allow;
+                return StateType.Allow;
 
             //Get the group
-            var group = await Koala.Bot.PermissionManager.GetGuildManager(member.Guild).GetMemberGroupAsync(member);
+            var group = await member.GetGroupAsync();
             Debug.Assert(group != null);
 
             //Evaluate the permission
             return await group.EvaluatePermissionAsync(permission);
         }
+
+        /// <summary>
+        /// Gets the group of the user, ensuring the group exists.
+        /// 
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        public static Task<MemberGroup> GetGroupAsync(this DiscordMember member) => Koala.Bot.PermissionManager.GetMemberGroupAsync(member);
+        
+        /// <summary>
+        /// Gets the name of the group for the user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public static string GetGroupName(this DiscordMember user) => MemberGroup.GetGroupName(user);
+
+        /// <summary>
+        /// Gets the name of the group for the role.
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        public static string GetGroupName(this DiscordRole role) => $"role.{role.Id}";
     }
 }

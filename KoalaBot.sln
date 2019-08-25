@@ -1,9 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.645
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KoalaBot", "KoalaBot\KoalaBot.csproj", "{FFB630A5-BA61-43D8-9DE0-BBDBA57B0CF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KoalaBot", "KoalaBot\KoalaBot.csproj", "{FFB630A5-BA61-43D8-9DE0-BBDBA57B0CF1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KoalaBot.PermissionEngine", "KoalaBot.PermissionEngine\KoalaBot.PermissionEngine.csproj", "{69091AA9-4E47-4B6B-9387-92C857C04415}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KoalaBot.PermissionEngine.Tests", "KoalaBot.PermissionEngine.Tests\KoalaBot.PermissionEngine.Tests.csproj", "{373D428A-7799-4C46-AD64-A856136FB6A9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{69091AA9-4E47-4B6B-9387-92C857C04415} = {69091AA9-4E47-4B6B-9387-92C857C04415}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +22,14 @@ Global
 		{FFB630A5-BA61-43D8-9DE0-BBDBA57B0CF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFB630A5-BA61-43D8-9DE0-BBDBA57B0CF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFB630A5-BA61-43D8-9DE0-BBDBA57B0CF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69091AA9-4E47-4B6B-9387-92C857C04415}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69091AA9-4E47-4B6B-9387-92C857C04415}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69091AA9-4E47-4B6B-9387-92C857C04415}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69091AA9-4E47-4B6B-9387-92C857C04415}.Release|Any CPU.Build.0 = Release|Any CPU
+		{373D428A-7799-4C46-AD64-A856136FB6A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{373D428A-7799-4C46-AD64-A856136FB6A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{373D428A-7799-4C46-AD64-A856136FB6A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{373D428A-7799-4C46-AD64-A856136FB6A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

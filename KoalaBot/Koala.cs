@@ -15,7 +15,7 @@ using KoalaBot.Logging;
 using KoalaBot.Modules;
 using KoalaBot.Redis;
 using KoalaBot.Redis.Serialize;
-using KoalaBot.Permissions.CommandNext;
+
 using DSharpPlus.CommandsNext.Exceptions;
 using System.Linq;
 using KoalaBot.Ticker;
@@ -89,9 +89,10 @@ namespace KoalaBot
             {
                 new TickerMessage("KoalaOS"),
                 new TickerRandom(),
-                new TickerGuildsAvailable(),
                 new TickerMessageCount(),
-                new TickerPermissionsCount()
+                new TickerRandom(),
+                new TickerPermissionsCount(),
+                new TickerRandom(),
             });
 
             //Track how many messages are sent
@@ -104,8 +105,8 @@ namespace KoalaBot
                 .AddSingleton(this)
                 .BuildServiceProvider(true);
             this.CommandsNext = this.Discord.UseCommandsNext(new CommandsNextConfiguration() { PrefixResolver = ResolvePrefix, Services = deps });
-            this.CommandsNext.RegisterConverter(new PermissionGroupConverter());
-            this.CommandsNext.RegisterConverter(new PermissionMemberGroupConverter());
+            this.CommandsNext.RegisterConverter(new PermissionArgumentConverter());
+            this.CommandsNext.RegisterConverter(new MemberPermissionArgumentConverter());
             this.CommandsNext.RegisterConverter(new QueryConverter());
             this.CommandsNext.RegisterConverter(new CommandQueryArgumentConverter());
             this.CommandsNext.RegisterConverter(new Starwatch.CommandNext.WorldConverter(this));
@@ -275,12 +276,12 @@ namespace KoalaBot
                 {
                     //We will be silent about missing permissions unless we are admin rank
                     if (e.Context.Member.Roles.Any(role => role.Permissions.HasPermission(DSharpPlus.Permissions.ManageRoles | DSharpPlus.Permissions.Administrator)))
-                        await e.Context.ReplyAsync($"You require the `{pcfe.Permission}` permission to use this command.");
+                        await e.Context.ReplyAsync($"You require the `{pcfe.PermissionName}` permission to use this command.");
                     else
                         await e.Context.ReplyReactionAsync("🙅");
 
                     //Save the execution to the database
-                    await (new CommandLog(e.Context, failure: $"bad permission. Needs {pcfe.Permission}.")).SaveAsync(DbContext);
+                    await (new CommandLog(e.Context, failure: $"bad permission. Needs {pcfe.PermissionName}.")).SaveAsync(DbContext);
                     return;
                 }
                 else

@@ -11,8 +11,8 @@ using DSharpPlus.Entities;
 using KoalaBot.Entities;
 using KoalaBot.Exceptions;
 using System.Linq;
-using KoalaBot.Permissions.CommandNext;
 using KoalaBot.Managers;
+using KoalaBot.CommandNext;
 
 namespace KoalaBot.Modules
 {

@@ -1,6 +1,5 @@
 ﻿using DSharpPlus.Entities;
-using KoalaBot.Permissions;
-using KoalaBot.Permissions.CommandNext;
+using KoalaBot.PermissionEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +12,7 @@ namespace KoalaBot.Ticker
 	{
 		public Task<DiscordActivity> GetActivityAsync(TickerManager manager)
         {
-            int count = Permission.Recorded.Count();
+            int count = Permission.Recorded;
             return Task.FromResult(new DiscordActivity($"{count} permissions", ActivityType.Watching));
 		}
 	}
