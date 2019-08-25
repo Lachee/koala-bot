@@ -26,10 +26,10 @@ namespace KoalaBot.CommandNext
             try
             {
                 //Try to get a role based group
-                var role = value.Equals("everyone") ? ctx.Guild.EveryoneRole : await ctx.CommandsNext.ConvertArgument<DiscordRole>(value, ctx) as DiscordRole;
+                var role = await ctx.CommandsNext.ConvertArgument<DiscordRole>(value, ctx) as DiscordRole;
                 if (role != null)
                 {
-                    group = await engine.GetGroupAsync(role.GetGroupName());
+                    group = await Koala.Bot.PermissionManager.GetRoleGroupAsync(ctx.Guild, role);
                     return Optional.FromValue(group);
                 }
             } catch { }

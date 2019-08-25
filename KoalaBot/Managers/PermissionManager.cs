@@ -73,9 +73,8 @@ namespace KoalaBot.Managers
             Bot.Discord.GuildRoleDeleted += async (args) =>
             {
                 Logger.Log("Deleting Role {0}", args.Role);
-                var engine = GetEngine(args.Guild);
-                var group = await engine.GetGroupAsync(args.Role.GetGroupName());
-                if (group != null) await engine.DeleteGroupAsync(group);
+                var group = await GetRoleGroupAsync(args.Guild, args.Role);
+                await group.DeleteAsync();
             };
             
         }
@@ -92,6 +91,16 @@ namespace KoalaBot.Managers
             var mg = new MemberGroup(engine, member);
             await engine.AddGroupAsync(mg);
             return mg;
+        }
+
+        public async Task<Group> GetRoleGroupAsync(DiscordGuild guild, DiscordRole role)
+        {
+            var engine = GetEngine(guild);
+            var group = await engine.GetGroupAsync(role.GetGroupName());
+            if (group != null) return group;
+
+            group = new Group(engine, role.GetGroupName());
+            return await engine.AddGroupAsync(group);
         }
 
         /// <summary>
