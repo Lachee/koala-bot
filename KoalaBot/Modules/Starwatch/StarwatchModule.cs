@@ -114,10 +114,10 @@ namespace KoalaBot.Modules.Starwatch
             //else sessions = groupB;
             var pages = new Page[]
             {
-                new Page("**Characters**\n```\n" + string.Join("\n", groupA.Select(s => s.Username).Union(groupB.Select(s => s.Username)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet())  + "\n```"),
-                new Page("**Accounts**\n```\n" + string.Join("\n", groupA.Select(s => s.Account).Union(groupB.Select(s => s.Account)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```"),
-                new Page("**UUIDs**\n```\n" + string.Join("\n", groupA.Select(s => s.UUID).Union(groupB.Select(s => s.UUID)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```"),
-                new Page("**IPs**\n```\n" + string.Join("\n", groupA.Select(s => s.IP).Union(groupB.Select(s => s.IP)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```"),
+                new Page("**Characters**\n```\n" + string.Join("\n", groupA.Select(s => s.Username).Union(groupB.Select(s => s.Username)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet().ToList())  + "\n```"),
+                new Page("**Accounts**\n```\n" + string.Join("\n", groupA.Select(s => s.Account).Union(groupB.Select(s => s.Account)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet().ToList()) + "\n```"),
+                new Page("**UUIDs**\n```\n" + string.Join("\n", groupA.Select(s => s.UUID).Union(groupB.Select(s => s.UUID)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet().ToList()) + "\n```"),
+                new Page("**IPs**\n```\n" + string.Join("\n", groupA.Select(s => s.IP).Union(groupB.Select(s => s.IP)).Where(s => !string.IsNullOrEmpty(s)).ToHashSet().ToList()) + "\n```"),
             };
 
             string content = string.Join('\n', pages.Select(p => p.Content));
@@ -146,10 +146,10 @@ namespace KoalaBot.Modules.Starwatch
             await ctx.ReplyWorkingAsync();
             var response = await Starwatch.GetSessionsAsync(account, character, ip, uuid);
             var lines = new string[] {
-                "**Characters**\n```\n" + string.Join("\n", response.Payload.Select(s => s.Username).Where(s => !string.IsNullOrEmpty(s)).ToHashSet() + "\n```"),
-                "**Accounts**\n```\n" + string.Join("\n", response.Payload.Select(s => s.Account).Where(s => !string.IsNullOrEmpty(s)).ToHashSet() + "\n```"),
-                "**UUIDs**\n```\n" + string.Join("\n", response.Payload.Select(s => s.UUID).Where(s => !string.IsNullOrEmpty(s)).ToHashSet() + "\n```"),
-                "**IPs**\n```\n" + string.Join("\n",response.Payload.Select(s => s.IP).Where(s => !string.IsNullOrEmpty(s)).ToHashSet() + "\n```"),
+                "**Characters**\n```\n" + string.Join("\n", response.Payload.Select(s => s.Username).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
+                "**Accounts**\n```\n" + string.Join("\n", response.Payload.Select(s => s.Account).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
+                "**UUIDs**\n```\n" + string.Join("\n", response.Payload.Select(s => s.UUID).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
+                "**IPs**\n```\n" + string.Join("\n",response.Payload.Select(s => s.IP).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
             };
 
             await ctx.ReplyAsync(string.Join('\n', lines));

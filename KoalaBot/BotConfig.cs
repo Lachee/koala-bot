@@ -41,7 +41,7 @@ namespace KoalaBot
         public class StarwatchConfig
         {
             public string Host { get; set; } = "http://localhost:8000/";
-            public string Username { get; set; } = "bot_accbound";
+            public string Username { get; set; } = "bot_example";
             public string Password { get; set; } = "someoriginalpassword";
         }
 

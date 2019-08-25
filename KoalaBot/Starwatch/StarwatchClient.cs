@@ -147,6 +147,7 @@ namespace KoalaBot.Starwatch
         {
             Uri url = BuildUrl(endpoint, queries);
             var _client = _httpClient;
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
             var response = await _client.GetAsync(url);
             return await ProcessResponseMessage<T>(response);
         }
@@ -203,11 +204,16 @@ namespace KoalaBot.Starwatch
 
         private async Task<Response<T>> ProcessResponseMessage<T>(HttpResponseMessage response)
         {
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden || response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new HttpRequestException("Forbidden");
+            
             //Read the json
             string json = await response.Content.ReadAsStringAsync();
 
             //Return the json object deserialized.
             var res = JsonConvert.DeserializeObject<Response<JToken>>(json);
+            if (res == null) throw new Exception("Failed to get any response from the server. Got: " + json);
+
             switch (res.Status)
             {
                 case RestStatus.Forbidden:
