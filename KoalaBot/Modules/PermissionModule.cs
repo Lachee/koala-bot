@@ -150,10 +150,25 @@ namespace KoalaBot.Modules
             await group.DeleteAsync();
             await ctx.ReplyAsync($"Group `{group.Name}` was deleted.");
         }
+
+        [Command("priority")]
+        [Description("Sets a group's priority")]
+        [Permission("koala.permissions.group.priority")]
+        public async Task DeleteGroup(CommandContext ctx, Group group, int priority)
+        {
+            //Don't knokw what the group is
+            if (group == null)
+                throw new ArgumentNullException($"The group `{group.Name}` does not exist.");
+
+            //Delete the group
+            group.Priority = priority;
+            var success = await group.SaveAsync();
+            await ctx.ReplyReactionAsync(success);
+        }
         #endregion
 
         #region Add Permissions
-       
+
         [Command("add")]
         [Description("Adds a permission to a group")]
         [Permission("koala.permissions.group.add", adminBypass: true, ownerBypass: true)]
