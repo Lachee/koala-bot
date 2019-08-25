@@ -19,8 +19,8 @@ namespace KoalaBot.Modules.Starwatch
 {
     public partial class StarwatchModule
     {
-        [Group("backup"), Aliases("b")]
-        [Description("Handles world backups.")]
+        [Group("protection"), Aliases("p")]
+        [Description("Handles world protections, such as whitelist and blacklisting.")]
         public partial class ProtectionModule : BaseCommandModule
         {
             public Koala Bot { get; }
