@@ -42,10 +42,10 @@ namespace KoalaBot.Starwatch
         public async Task<Response<Session[]>> GetSessionsAsync(string account = null, string character = null, string ip = null, string uuid = null)
         {
             var queries = new Dictionary<string, object>();
-            if (!string.IsNullOrEmpty(account))     queries.Add("account", account);
-            if (!string.IsNullOrEmpty(character))   queries.Add("username", character);
-            if (!string.IsNullOrEmpty(ip))          queries.Add("ip", ip);
-            if (!string.IsNullOrEmpty(uuid))        queries.Add("uuid", uuid);
+            if (!string.IsNullOrEmpty(account)) queries.Add("account", account);
+            if (!string.IsNullOrEmpty(character)) queries.Add("username", character);
+            if (!string.IsNullOrEmpty(ip)) queries.Add("ip", ip);
+            if (!string.IsNullOrEmpty(uuid)) queries.Add("uuid", uuid);
             return await GetRequestAsync<Session[]>("/session", queries);
         }
 
@@ -78,7 +78,8 @@ namespace KoalaBot.Starwatch
         /// <param name="world"></param>
         /// <returns></returns>
         public async Task<Response<Protection>> GetProtectionAsync(World world) => await GetRequestAsync<Protection>($"/world/{world.Whereami}/protection");
-    
+
+
         /// <summary>
         /// Creates a new world protection
         /// </summary>
@@ -121,6 +122,33 @@ namespace KoalaBot.Starwatch
 
         #endregion
 
+
+        #region Backup
+
+        /// <summary>
+        /// Gets a backup
+        /// </summary>
+        /// <param name="world"></param>
+        /// <returns></returns>
+        public async Task<Response<Backup>> GetBackupAsync(World world) => await GetRequestAsync<Backup>($"/world/{world.Whereami}/backup");
+
+        /// <summary>
+        /// Edits a backup
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="backup"></param>
+        /// <returns></returns>
+        public async Task<Response<Backup>> EditBackupAsync(World world, Backup backup) => await PutRequestAsync<Backup>($"/world/{world.Whereami}/backup", payload: backup);
+
+        /// <summary>
+        /// Delete a backup
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="backup"></param>
+        /// <returns></returns>
+        public async Task<Response<bool>> DeleteBackupAsync(World world, bool deleteFiles) => await DeleteRequestAsync<bool>($"/world/{world.Whereami}/backup", new Dictionary<string, object>() { { "delete", deleteFiles } });
+
+        #endregion
 
         /// <summary>
         /// Gets the statistics of the server
