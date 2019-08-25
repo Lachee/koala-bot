@@ -155,7 +155,7 @@ namespace KoalaBot.Modules.Starwatch
             [Permission("sw.protection.create")]
             public async Task CreateProtection(CommandContext ctx,
                 [Description("The world to create the protection for")] World world,
-                [Description("The mode of the world. Either BLACKLIST or WHITELIST")] Protection.ProtectionMode mode,
+                [Description("The mode of the world. Either BLACKLIST or WHITELIST")] string mode,
                 [Description("Should anonymous connections be allowed to connect?")] bool allowAnonymous,
                 [Description("A optional nickname for the protection")][RemainingText] string name = "")
             {
@@ -166,7 +166,7 @@ namespace KoalaBot.Modules.Starwatch
                 var response = await Starwatch.CreateProtectionAsync(new Protection()
                 {
                     World = world,
-                    Mode = mode,
+                    Mode = mode.ToLowerInvariant() == "blacklist" ? Protection.ProtectionMode.Blacklist : Protection.ProtectionMode.Whitelist,
                     AllowAnonymous = allowAnonymous,
                     Name = name
                 });
