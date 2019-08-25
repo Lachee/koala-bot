@@ -68,7 +68,8 @@ namespace KoalaBot.Ticker
             "Gimbal",
             "DRAGON BALL XENOVERSE 2",
             "Deatho's heart strings",
-            "on Voyager Roleplay"
+            "on Voyager Roleplay",
+            "Overwatch"
 		};
 
 		public Task<DiscordActivity> GetActivityAsync(TickerManager manager)

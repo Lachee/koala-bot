@@ -192,6 +192,7 @@ namespace KoalaBot.Starwatch
             Uri url = BuildUrl(endpoint, queries);
             var _client = _httpClient;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
+            _client.DefaultRequestHeaders.Add("content-type", "application/json");
             var response = await _client.DeleteAsync(url);
             return await ProcessResponseMessage<T>(response);
         }
