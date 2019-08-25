@@ -136,7 +136,7 @@ namespace KoalaBot.PermissionEngine.Tests
         }
 
         [Fact]
-        public async void EC04_ValueOverridesUnsetsForPatterns()
+        public async void EC05_ValueOverridesUnsetsForPatterns()
         {
             var engine = new Engine();
             await engine.ImportAsync(@"
@@ -157,6 +157,47 @@ namespace KoalaBot.PermissionEngine.Tests
             var collapsed = permissions.Select(r => r.ToString());
             Assert.Contains("?group.role.appricots", collapsed);
             Assert.Contains("-group.role.364299039535267840", collapsed);
+        }
+
+        [Fact]
+        public async void EC06_SkywingRoles_RulesOfInhertiencesShouldApplyToPatterns()
+        {
+            var engine = new Engine();
+            await engine.ImportAsync(@"
+::everyone|0
+-koala.execute
++koala.execute.609641159202963474
++koala.execute.487648961113620480
+-group.staff
+-sw
+
+::role.260570184559886340
++group.staff
+
+::staff
++koala.execute.261193452459393025
++group.role.615065754118651937
++sw
+
+::user.106779287780077568
++group.everyone
+?group.role.259735467400888320
+?group.role.261102231066116096
+?group.role.261102234153123840
+?group.role.615065754118651937
+?group.role.259888961881636874
+?group.role.261102236841672716
+?group.role.261102858869538826
+");
+
+            var group = await engine.GetGroupAsync("user.106779287780077568");
+            Assert.NotNull(group);
+
+            var permissions = await group.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\..*"));
+            var collapsed = permissions.Select(r => r.ToString());
+
+            //When we minus a group, all our conditions should be deny
+            Assert.Contains("-group.role.615065754118651937", collapsed);
         }
     }
 

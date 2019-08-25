@@ -236,7 +236,7 @@ namespace KoalaBot.PermissionEngine.Groups
             return permissions.Values;
         }
 
-        private async Task InternalEvaluatePatternAsync(Dictionary<string, Permission> evals, Regex pattern)
+        private async Task InternalEvaluatePatternAsync(Dictionary<string, Permission> evals, Regex pattern, StateType overwrite = StateType.Unset)
         {
             //Prepare a list of permissions to check last.
             List<Permission> checklast = new List<Permission>();
@@ -255,7 +255,8 @@ namespace KoalaBot.PermissionEngine.Groups
                     }
                     else
                     {
-                        evals[p.Name] = p;
+                        Permission p3 = new Permission(p.Name, overwrite == StateType.Deny ? StateType.Deny : p.State);
+                        evals[p.Name] = p3;
                     }
                 }
 
@@ -276,7 +277,7 @@ namespace KoalaBot.PermissionEngine.Groups
 
             //Iterate, checking each group.
             foreach (var kp in groups.OrderByDescending(kp => kp.Value.Priority))
-                await kp.Value.InternalEvaluatePatternAsync(evals, pattern);
+                await kp.Value.InternalEvaluatePatternAsync(evals, pattern, kp.Key.State);
         }
     }
 }
