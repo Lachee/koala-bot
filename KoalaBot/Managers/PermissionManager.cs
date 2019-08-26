@@ -111,6 +111,8 @@ namespace KoalaBot.Managers
         /// <returns></returns>
         public async Task<bool> ApplyRolesAsync(DiscordMember member)
         {
+            return false;
+
             var stopwatch = Stopwatch.StartNew();
             var mg = await GetMemberGroupAsync(member);
 
