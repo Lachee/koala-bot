@@ -35,8 +35,11 @@ namespace KoalaBot.CommandNext
 
         public override async Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
+            //TODO: Fix This
             if (help)
             {
+                return true;
+
                 var group = await ctx.Member.GetGroupAsync();
                 var pattern = PermissionName.Replace(".", "\\.") + "($|\\..*)";
                 var permissions = await group.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(pattern));
