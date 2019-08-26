@@ -19,7 +19,7 @@ namespace KoalaBot.Modules.Starwatch
 {
     public partial class StarwatchModule
     {
-        [Group("backup"), Aliases("b")]
+        [Group("backup")]
         [Description("Handles world backups.")]
         public partial class BackupModule : BaseCommandModule
         {

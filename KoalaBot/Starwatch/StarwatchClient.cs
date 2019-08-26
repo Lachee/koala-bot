@@ -150,6 +150,25 @@ namespace KoalaBot.Starwatch
 
         #endregion
 
+        #region Ban
+
+        /// <summary>
+        /// Creates a new ban
+        /// </summary>
+        /// <param name="ban"></param>
+        /// <returns></returns>
+        public async Task<Response<Ban>> BanAsync(Ban ban) => await PostRequestAsync<Ban>("/ban", payload: ban);
+
+
+        /// <summary>
+        /// Gets the ban
+        /// </summary>
+        /// <param name="ticket"></param>
+        /// <returns></returns>
+        public async Task<Response<Ban>> GetBanAsync(long ticket) => await GetRequestAsync<Ban>($"/ban/{ticket}");
+
+        #endregion
+
         /// <summary>
         /// Gets the statistics of the server
         /// </summary>
