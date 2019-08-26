@@ -195,6 +195,7 @@ namespace KoalaBot.Starwatch
             Uri url = BuildUrl(endpoint, queries);
             var _client = _httpClient;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
+            _client.DefaultRequestHeaders.Add("content-type", "application/json");
             var response = await _client.GetAsync(url);
             return await ProcessResponseMessage<T>(response);
         }
@@ -229,7 +230,8 @@ namespace KoalaBot.Starwatch
             var json = JsonConvert.SerializeObject(payload);
             var _client = _httpClient;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
-            var response = await _client.PutAsync(url, new StringContent(json));
+            var request = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _client.PutAsync(url, request);
             return await ProcessResponseMessage<T>(response);
         }
 
@@ -246,7 +248,9 @@ namespace KoalaBot.Starwatch
             var json = JsonConvert.SerializeObject(payload);
             var _client = _httpClient;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
-            var response = await _client.PostAsync(url, new StringContent(json));
+
+            var request = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _client.PostAsync(url, request);
             return await ProcessResponseMessage<T>(response);
         }
 
