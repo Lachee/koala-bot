@@ -95,10 +95,10 @@ namespace KoalaBot.Modules.Starwatch
             {
                 DiscordEmbedBuilder builder = new DiscordEmbedBuilder();
                 builder.WithTitle($"Ban {ban.Ticket}")
-                    .AddField("IP", ban.IP)
-                    .AddField("UUID", ban.UUID)
-                    .AddField("Reason", ban.Reason)
-                    .AddField("Moderator", ban.Moderator)
+                    .AddField("IP", ban.IP ?? "N/A")
+                    .AddField("UUID", ban.UUID ?? "N/A")
+                    .AddField("Reason", ban.Reason ?? "N/A")
+                    .AddField("Moderator", ban.Moderator ?? "N/A")
                     .AddField("Ban Date", ban.CreatedDate.ToString());
                 return builder.Build();
             }
