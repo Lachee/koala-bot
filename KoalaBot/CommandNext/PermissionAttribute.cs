@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using KoalaBot.Extensions;
 using KoalaBot.PermissionEngine;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace KoalaBot.CommandNext
@@ -34,6 +35,15 @@ namespace KoalaBot.CommandNext
 
         public override async Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
+            if (help)
+            {
+                var group = await ctx.Member.GetGroupAsync();
+                var pattern = PermissionName.Replace(".", "\\.") + "($|\\..*)";
+                var permissions = await group.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(pattern));
+                return permissions.Any(p => p.State == StateType.Allow);
+            }
+
+
             //So we will always check the most specific one first, so we will append the channel id to the end of our permission.
             string perm = PermissionName + (RestrictChannel ? "." + ctx.Channel.Id : "");
             return await ctx.Member.HasPermissionAsync(perm, AdminBypass, OwnerBypass);

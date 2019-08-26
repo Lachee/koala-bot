@@ -16,7 +16,8 @@ using KoalaBot.CommandNext;
 
 namespace KoalaBot.Modules
 {
-    [Group("mod"), RequirePermissions(DSharpPlus.Permissions.ManageMessages)]
+    [Group("mod")]
+    [Permission("koala.mod")]
     public class ModerationModule : BaseCommandModule
     {
         public Koala Bot { get; }
