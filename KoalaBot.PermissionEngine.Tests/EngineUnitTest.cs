@@ -99,6 +99,26 @@ namespace KoalaBot.PermissionEngine.Tests
         }
 
         [Fact]
+        public async void Import_IgnoresComments()
+        {
+            var import = "#This is a single line comment\n::groupa\n-koala.execute.adminchat   #this is a end of line comment\n::groupb\n+koala.execute\n::groupc\n-koala.execute\n";
+            var importEngine = new Engine();
+
+            await importEngine.ImportAsync(import);
+
+            var groupA = await importEngine.GetGroupAsync("groupA");
+            var groupB = await importEngine.GetGroupAsync("groupB");
+            var groupC = await importEngine.GetGroupAsync("groupC");
+
+            Assert.NotNull(groupA);
+            Assert.NotNull(groupB);
+            Assert.NotNull(groupC);
+
+            Assert.Equal(StateType.Deny, groupA.GetPermission("koala.execute.adminchat").State);
+            Assert.Equal(StateType.Allow, groupB.GetPermission("koala.execute").State);
+            Assert.Equal(StateType.Deny, groupC.GetPermission("koala.execute").State);
+        }
+        [Fact]
         public async void Import_CanImportPriority()
         {
             var import = "::groupa|85\n-koala.check";

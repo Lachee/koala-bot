@@ -43,7 +43,7 @@ namespace KoalaBot.PermissionEngine
             string[] lines = import.Split('\n');
             foreach(var rawLine in lines)
             {
-                var line = rawLine.Trim();
+                var line = rawLine.Split('#')[0].Trim();
                 if (line.StartsWith("#") || string.IsNullOrEmpty(line)) continue;
 
                 if (line.StartsWith("::"))
