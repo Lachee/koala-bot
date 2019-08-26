@@ -167,6 +167,14 @@ namespace KoalaBot.Starwatch
         /// <returns></returns>
         public async Task<Response<Ban>> GetBanAsync(long ticket) => await GetRequestAsync<Ban>($"/ban/{ticket}");
 
+
+        /// <summary>
+        /// Deletes the ban
+        /// </summary>
+        /// <param name="ticket"></param>
+        /// <returns></returns>
+        public async Task<Response<bool>> DeleteBanAsync(long ticket) => await DeleteRequestAsync<bool>($"/ban/{ticket}");
+
         #endregion
 
         /// <summary>
@@ -195,7 +203,6 @@ namespace KoalaBot.Starwatch
             Uri url = BuildUrl(endpoint, queries);
             var _client = _httpClient;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
-            _client.DefaultRequestHeaders.Add("content-type", "application/json");
             var response = await _client.GetAsync(url);
             return await ProcessResponseMessage<T>(response);
         }
@@ -212,7 +219,6 @@ namespace KoalaBot.Starwatch
             Uri url = BuildUrl(endpoint, queries);
             var _client = _httpClient;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
-            _client.DefaultRequestHeaders.Add("content-type", "application/json");
             var response = await _client.DeleteAsync(url);
             return await ProcessResponseMessage<T>(response);
         }
@@ -279,6 +285,9 @@ namespace KoalaBot.Starwatch
 
                 case RestStatus.TooManyRequests:
                     throw new RestRateLimitException(new Response<RateLimit>(res));
+
+                case RestStatus.InternalError:
+                    throw new RestResponseException(res);
 
                 //Return the response. Everything else can be handled.
                 default:

@@ -34,10 +34,28 @@ namespace KoalaBot.Modules.Starwatch
                 this.Logger = new Logger("CMD-SW-BAN", bot.Logger);
             }
 
-            [Command("create"), Aliases("add", "+")]
+
+            [Command("delete"), Aliases("unban", "pardon", "-", "remove")]
+            [Permission("sw.ban.ip")]
+            [Description("Deletes a ban")]
+            public async Task DeleteBan(CommandContext ctx, [Description("The ticket number of the ban")] long ticket)
+            {
+                await ctx.ReplyWorkingAsync();
+                var response = await Starwatch.DeleteBanAsync(ticket);
+
+                if (response.Status != RestStatus.OK)
+                    throw new RestResponseException(response);
+
+                //Build the response                
+                await ctx.ReplyReactionAsync(response.Payload);
+            }
+
+            [Command("create"), Aliases("add", "+", "ban")]
             [Permission("sw.ban.ip")]
             [Description("Creates a new ban")]
-            public async Task BanPlayer(CommandContext ctx, string ip, string reason)
+            public async Task BanPlayer(CommandContext ctx,
+                [Description("The IP address to ban.")] string ip, 
+                [Description("The reason for the ban.")] string reason)
             {
                 if (string.IsNullOrWhiteSpace(ip))
                     throw new ArgumentNullException("ip");
@@ -65,10 +83,11 @@ namespace KoalaBot.Modules.Starwatch
                 await ctx.ReplyAsync(embed: BuildBanEmbed(response.Payload));
             }
 
-            [Command("get"), Aliases("check", "isbanned")]
+            [GroupCommand]
             [Permission("sw.ban.view")]
             [Description("Checks a ban")]
-            public async Task BanPlayer(CommandContext ctx, long ticket)
+            public async Task BanPlayer(CommandContext ctx, 
+                [Description("The ticket of the ban to view")] long ticket)
             {
                 //Fetch the response
                 await ctx.ReplyWorkingAsync();
