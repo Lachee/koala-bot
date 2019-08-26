@@ -14,6 +14,7 @@ using KoalaBot.CommandNext;
 namespace KoalaBot.Modules.Configuration
 {
     [Group("config")]
+    [Permission("koala.config")]
     public partial class ConfigurationModule : BaseCommandModule
     {
         public Koala Bot { get; }
