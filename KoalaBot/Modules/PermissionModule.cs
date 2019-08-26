@@ -104,7 +104,7 @@ namespace KoalaBot.Modules
         [Command("tree")]
         [Description("Creates a visual representation of permission tree")]
         [Permission("koala.permissions.group.tree")]
-        public async Task Tree(CommandContext ctx, MemberGroup group)
+        public async Task Tree(CommandContext ctx, Group group)
         {
             //Get teh user group
             if (group == null)
