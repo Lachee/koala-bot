@@ -114,8 +114,31 @@ namespace KoalaBot.Modules
             var tree = await TreeBranch.CreateTreeAsync(group);
             var sb = new StringBuilder();
             tree.BuildTreeString(sb);
+            var export = sb.ToString();
 
-            await ctx.ReplyAsync($"```\n{sb.ToString()}\n```");
+            if (export.Length < 1980)
+            {
+                await ctx.ReplyAsync("```\n" + export + "\n```");
+            }
+            else
+            {
+                string tmppath = "tree_" + ctx.Guild.Id + "_" + group.Name + ".txt";
+                try
+                {
+                    await System.IO.File.WriteAllTextAsync(tmppath, export);
+                    await ctx.RespondWithFileAsync(tmppath, "Exported Groups:");
+                    await ctx.ReplyReactionAsync(true);
+                }
+                catch (Exception)
+                {
+                    await ctx.ReplyReactionAsync(false);
+                }
+                finally
+                {
+                    if (System.IO.File.Exists(tmppath))
+                        System.IO.File.Delete(tmppath);
+                }
+            }
         }
 
         #region Create / Delete Groups
