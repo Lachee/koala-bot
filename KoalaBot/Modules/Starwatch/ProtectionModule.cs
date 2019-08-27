@@ -125,7 +125,7 @@ namespace KoalaBot.Modules.Starwatch
 
                 //Adds an account to the protection
                 var response = await Starwatch.CreateProtectedAccountAsync(world, account, ctx.Member + " added user");
-                await ctx.ReplyReactionAsync(response.Status != RestStatus.ResourceNotFound && response.Payload);
+                await ctx.ReplyReactionAsync(response.Status != RestStatus.ResourceNotFound && response.Payload != null);
             }
 
             [Command("remove"), Aliases("remacc", "rem")]

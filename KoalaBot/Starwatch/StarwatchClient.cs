@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace KoalaBot.Starwatch
 {
@@ -109,7 +110,7 @@ namespace KoalaBot.Starwatch
         /// <param name="account"></param>
         /// <param name="reason"></param>
         /// <returns></returns>
-        public async Task<Response<bool>> CreateProtectedAccountAsync(World world, string account, string reason) => await PostRequestAsync<bool>($"/world/{world.Whereami}/protection/{account}", new Dictionary<string, object>() { ["reason"] = reason });
+        public async Task<Response<object>> CreateProtectedAccountAsync(World world, string account, string reason) => await PostRequestAsync<object>($"/world/{world.Whereami}/protection/{account}", new Dictionary<string, object>() { ["reason"] = reason });
 
         /// <summary>
         /// Deletes an account from the list
@@ -251,7 +252,7 @@ namespace KoalaBot.Starwatch
         private async Task<Response<T>> PostRequestAsync<T>(string endpoint, IEnumerable<KeyValuePair<string, object>> queries = null, object payload = null)
         {
             Uri url = BuildUrl(endpoint, queries);
-            var json = JsonConvert.SerializeObject(payload);
+            var json = payload == null ? "{}" : JsonConvert.SerializeObject(payload);
             var _client = _httpClient;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", _authorization);
 
@@ -264,9 +265,13 @@ namespace KoalaBot.Starwatch
         {
             if (response.StatusCode == System.Net.HttpStatusCode.Forbidden || response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new HttpRequestException("Forbidden");
-            
+
+
             //Read the json
             string json = await response.Content.ReadAsStringAsync();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                throw new HttpRequestException("Bad Request");
 
             //Return the json object deserialized.
             var res = JsonConvert.DeserializeObject<Response<JToken>>(json);
@@ -301,7 +306,7 @@ namespace KoalaBot.Starwatch
             string url = $"{Host}/api{endpoint.TrimEnd('/')}";
             if (queries != null)
             {
-                var q = string.Join("&", queries.Select(kp => $"{kp.Key}={kp.Value}"));
+                var q = string.Join("&", queries.Select(kp => $"{kp.Key}={HttpUtility.UrlEncode(kp.Value.ToString())}"));
                 if (!string.IsNullOrEmpty(q)) url += $"?{q}";
             }
 

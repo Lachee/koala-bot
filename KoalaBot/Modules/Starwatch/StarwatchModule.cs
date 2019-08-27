@@ -144,6 +144,7 @@ namespace KoalaBot.Modules.Starwatch
             [Description("UUID to search")]             string uuid = null)
         {
             await ctx.ReplyWorkingAsync();
+
             var response = await Starwatch.GetSessionsAsync(account, character, ip, uuid);
             var lines = new string[] {
                 "**Characters**\n```\n" + string.Join("\n", response.Payload.Select(s => s.Username).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
