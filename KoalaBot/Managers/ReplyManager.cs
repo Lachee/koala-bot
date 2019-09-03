@@ -46,6 +46,9 @@ namespace KoalaBot.Managers
                     var msg = await e.Channel.GetMessageAsync(reply.ResponseMsg);
                     if (msg != null) await msg.DeleteAsync("Deleted requesting method.");
                 }
+
+                //Now delete the reply
+                await DeleteReplyAsync(e.Guild, reply);
             }
         }
 
@@ -251,6 +254,12 @@ namespace KoalaBot.Managers
                 ResponseType = Reply.SnowflakeType.Reaction
             });
             await Redis.SetExpiryAsync(key, ReplyTimeout);
+        }
+
+        public async Task<bool> DeleteReplyAsync(DiscordGuild guild, Reply reply)
+        {
+            string key = Namespace.Combine(guild.Id, "replies", reply.CommandMsg);
+            return await Redis.RemoveAsync(key);
         }
     }
 }
