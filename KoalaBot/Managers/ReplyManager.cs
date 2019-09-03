@@ -25,6 +25,28 @@ namespace KoalaBot.Managers
             //_memcache = new Dictionary<ulong, Reply>(16);
 
             Bot.Discord.MessageUpdated += HandleCommandsAsync;
+            Bot.Discord.MessageDeleted += HandleMessageDelete;
+        }
+
+        private async Task HandleMessageDelete(DSharpPlus.EventArgs.MessageDeleteEventArgs e)
+        {
+            //Skip if its invalid
+            if (e == null) return;
+            if (e.Message == null) return;
+
+            //Get the reply associated with the message
+            var reply = await GetReplyFromEditAsync(e.Message);
+            if (reply != null && reply.CommandMsg == e.Message.Id)
+            {
+                //We are just a message, so delete the message
+                if (reply.ResponseType == Reply.SnowflakeType.Message)
+                {
+                    //Get the response message and load it into our memory cache
+                    // then modify the contents of the message
+                    var msg = await e.Channel.GetMessageAsync(reply.ResponseMsg);
+                    if (msg != null) await msg.DeleteAsync("Deleted requesting method.");
+                }
+            }
         }
 
         private async Task HandleCommandsAsync(DSharpPlus.EventArgs.MessageUpdateEventArgs e)

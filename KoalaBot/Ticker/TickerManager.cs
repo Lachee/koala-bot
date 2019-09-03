@@ -49,15 +49,32 @@ namespace KoalaBot.Ticker
             ITickable ticker = null;
             lock (_lock) ticker = _tickers[_currentTicker];
 
-            //Tick
+            //Prepare the activity
+            DiscordActivity activity = null;
+
             try
             {
+                //Tick
                 Logger.Log("Ticking Activity with {0}", ticker);
-                var activity = await ticker.GetActivityAsync(this);
-                await Discord.UpdateStatusAsync(activity);
+                activity = await ticker.GetActivityAsync(this);
             }
             catch (Exception ex)
             {
+                //Log the exception
+                Logger.LogError(ex);
+
+                //An exception occured. If we have more than 1 ticker, try again
+                if (_tickers.Count > 0) await Tick();
+            }
+
+            try
+            {
+                //Try to update teh status
+                await Discord.UpdateStatusAsync(activity);
+            }
+            catch(Exception ex)
+            {
+                //Log the exception and then abort. We don't want to reattempt failed status updates.
                 Logger.LogError(ex);
             }
         }

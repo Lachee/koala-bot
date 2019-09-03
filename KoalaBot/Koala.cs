@@ -87,11 +87,9 @@ namespace KoalaBot
             TickerManager = new TickerManager(this, Logger.CreateChild("TICKER")) { Interval = 120 * 1000 };
             TickerManager.RegisterTickers(new ITickable[]
             {
-                new TickerMessage("KoalaOS"),
-                new TickerRandom(),
+                new TickerStarwatch(Starwatch),
                 new TickerMessageCount(),
-                new TickerRandom(),
-                new TickerPermissionsCount(),
+                new TickerStarwatch(Starwatch),
                 new TickerRandom(),
             });
 

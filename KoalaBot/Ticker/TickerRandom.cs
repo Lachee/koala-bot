@@ -68,7 +68,6 @@ namespace KoalaBot.Ticker
             "Gimbal",
             "DRAGON BALL XENOVERSE 2",
             "Deatho's heart strings",
-            "on Voyager Roleplay",
             "Overwatch"
 		};
 

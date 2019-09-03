@@ -27,6 +27,38 @@ namespace KoalaBot.PermissionEngine.Tests
             Assert.Equal(StateType.Allow, state);
         }
 
+        [Fact]
+        public async void Eval_PatternMatchesEval()
+        {
+            var engine = new Engine();
+            await engine.ImportAsync(@"
+                ::groupa
+                +koala.fruit.apricot
+                +koala.execute.channel
+                +group.role.admin
+                +group.role.bacon.and.eggs
+                
+                ::role.admin
+                +koala.fruit.mango
+                +group.secondorder
+    
+                ::role.bacon.and.eggs
+                +koala.fruit.apple
+
+                ::secondorder
+                +koala.fruit.orange
+            ");
+
+            var group = await engine.GetGroupAsync("groupa");
+            Assert.NotNull(group);
+
+            var perms = await group.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\..*"));
+            foreach (var p in perms)
+            {
+                var m = await group.EvaluatePermissionAsync(p.Name);
+                Assert.Equal(m, p.State);
+            }
+        }
 
         [Fact]
         public async void Eval_CanEvaluateGroups()
