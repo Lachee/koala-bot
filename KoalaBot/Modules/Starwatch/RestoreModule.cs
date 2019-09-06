@@ -19,16 +19,16 @@ namespace KoalaBot.Modules.Starwatch
 {
     public partial class StarwatchModule
     {
-        [Group("backup")]
-        [Description("Handles world backups.")]
-        public partial class BackupModule : BaseCommandModule
+        [Group("restore")]
+        [Description("Handles world restores.")]
+        public partial class RestoreModule : BaseCommandModule
         {
             public Koala Bot { get; }
             public IRedisClient Redis => Bot.Redis;
             public Logger Logger { get; }
             public StarwatchClient Starwatch => Bot.Starwatch;
 
-            public BackupModule(Koala bot)
+            public RestoreModule(Koala bot)
             {
                 this.Bot = bot;
                 this.Logger = new Logger("CMD-SW-PROC", bot.Logger);
@@ -37,7 +37,7 @@ namespace KoalaBot.Modules.Starwatch
             [GroupCommand]
             [Permission("sw.backup.list")]
             [Description("Lists a world's backup setting.")]
-            public async Task GetBackup(CommandContext ctx, World world)
+            public async Task GetRestore(CommandContext ctx, World world)
             {
                 if (world == null)
                     throw new ArgumentNullException("world");
@@ -47,7 +47,7 @@ namespace KoalaBot.Modules.Starwatch
 
                 //Fetch the response
                 await ctx.ReplyWorkingAsync();
-                var response = await Starwatch.GetBackupAsync(world);
+                var response = await Starwatch.GetRestoreAsync(world);
 
                 //404, the world doesn't exist
                 if (response.Status == RestStatus.ResourceNotFound)
@@ -61,38 +61,20 @@ namespace KoalaBot.Modules.Starwatch
                     throw new RestResponseException(response);
 
                 //Build the response
-                DiscordEmbedBuilder builder = new DiscordEmbedBuilder();
-                builder.WithTitle($"Backup {world.Whereami}")
-                    .AddField("Is Rolling", response.Payload.IsRolling.ToString())
-                    .AddField("Is Auto Restore", response.Payload.IsAutoRestore.ToString())
-                    .AddField("Last Time", response.Payload.LastBackup.ToString());
-
-                await ctx.ReplyAsync(embed: builder.Build());
+                await ctx.ReplyAsync($"**{world.Whereami}** is set to auto restore. " + (response.Payload.Mirror != null ? "It mirrors `" + response.Payload.Mirror + "`" : ""));
             }
 
-            [Command("edit"), Aliases("e")]
-            [Permission("sw.backup.edit")]
-            [Description("Edits a world's backup setting")]
-            public async Task EditBackup(CommandContext ctx, World world,
-                [Description("Enables regular automatic backups of the world. ")] bool isRolling,
-                [Description("Makes the world automatically restore from its latest backup on restart.")] bool isAutoRestore)
+            [Command("create")]
+            [Permission("sw.backup.create")]
+            [Description("Creates a snapshot of the world to restore. ")]
+            public async Task CreateRestoreSnapshot(CommandContext ctx, World world)
             {
                 if (world == null)
                     throw new ArgumentNullException("world");
 
-                if (!await ctx.Member.HasPermissionAsync($"sw.backup.edit.{world.Whereami}", false, allowUnset: true))
-                    throw new PermissionException($"sw.backup.edit.{world.Whereami}");
-
                 //Fetch the response
                 await ctx.ReplyWorkingAsync();
-                var backup = new Backup()
-                {
-                    IsAutoRestore = isAutoRestore,
-                    IsRolling = isRolling,
-                    LastBackup = null
-                };
-
-                var response = await Starwatch.EditBackupAsync(world, backup);
+                var response = await Starwatch.CreateRestoreAsync(world);
 
                 //404, the world doesn't exist
                 if (response.Status == RestStatus.ResourceNotFound)
@@ -106,21 +88,45 @@ namespace KoalaBot.Modules.Starwatch
                     throw new RestResponseException(response);
 
                 //Build the response
-                DiscordEmbedBuilder builder = new DiscordEmbedBuilder();
-                builder.WithTitle($"Backup {world.Whereami}")
-                    .AddField("Is Rolling", response.Payload.IsRolling.ToString())
-                    .AddField("Is Auto Restore", response.Payload.IsAutoRestore.ToString())
-                    .AddField("Last Time", response.Payload.LastBackup.ToString());
+                await ctx.ReplyAsync($"**{world.Whereami}** is set to auto restore. " + (response.Payload.Mirror != null ? "It mirrors `" + response.Payload.Mirror + "`" : ""));
+            }
 
-                await ctx.ReplyAsync(embed: builder.Build());
+
+            [Command("mirror")]
+            [Permission("sw.backup.mirror")]
+            [Description("Sets the worlds mirror. ")]
+            public Task RemoveRestoreMirror(CommandContext ctx, World world) => MirrorRestore(ctx, world, null);
+
+            [Command("mirror")]
+            public async Task MirrorRestore(CommandContext ctx, World world, World mirror)
+            {
+                if (world == null)
+                    throw new ArgumentNullException("world");
+
+                //Fetch the response
+                await ctx.ReplyWorkingAsync();
+                var response = await Starwatch.SetRestoreMirrorAsync(world, mirror);
+
+                //404, the world doesn't exist
+                if (response.Status == RestStatus.ResourceNotFound)
+                {
+                    await ctx.ReplyAsync(world + " does not exist and cannot be backed up.");
+                    return;
+                }
+
+                //Something else, throw an exception
+                if (response.Status != RestStatus.OK)
+                    throw new RestResponseException(response);
+
+                //Build the response
+                await ctx.ReplyAsync($"**{world.Whereami}** is set to auto restore. " + (response.Payload.Mirror != null ? "It mirrors `" + response.Payload.Mirror + "`" : ""));
             }
 
             [Command("delete"), Aliases("d")]
             [Permission("sw.backup.delete")]
-            [Description("Deletes a world's backup setting")]
-            public async Task EditBackup(CommandContext ctx,
-                [Description("The world to delete the backup for.")] World world, 
-                [Description("Delete the previous backed up files.")] bool deleteFiles)
+            [Description("Deletes a world's restore setting")]
+            public async Task DeleteRestore(CommandContext ctx,
+                [Description("The world to delete the backup for.")] World world)
             {
                 if (world == null)
                     throw new ArgumentNullException("world");
@@ -130,7 +136,7 @@ namespace KoalaBot.Modules.Starwatch
 
                 //Fetch the response
                 await ctx.ReplyWorkingAsync();
-                var response = await Starwatch.DeleteBackupAsync(world, deleteFiles);
+                var response = await Starwatch.DeleteRestoreAsync(world);
 
                 //404, the world doesn't exist
                 if (response.Status == RestStatus.ResourceNotFound)
@@ -143,7 +149,7 @@ namespace KoalaBot.Modules.Starwatch
                 if (response.Status != RestStatus.OK)
                     throw new RestResponseException(response);
 
-                await ctx.ReplyAsync("Backup configuration for `" + world + "` has been deleted.");
+                await ctx.ReplyAsync("Restore configuration for `" + world + "` has been deleted.");
             }
 
         }

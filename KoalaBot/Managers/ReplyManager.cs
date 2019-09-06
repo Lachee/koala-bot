@@ -34,22 +34,7 @@ namespace KoalaBot.Managers
             if (e == null) return;
             if (e.Message == null) return;
 
-            //Get the reply associated with the message
-            var reply = await GetReplyFromEditAsync(e.Message);
-            if (reply != null && reply.CommandMsg == e.Message.Id)
-            {
-                //We are just a message, so delete the message
-                if (reply.ResponseType == Reply.SnowflakeType.Message)
-                {
-                    //Get the response message and load it into our memory cache
-                    // then modify the contents of the message
-                    var msg = await e.Channel.GetMessageAsync(reply.ResponseMsg);
-                    if (msg != null) await msg.DeleteAsync("Deleted requesting method.");
-                }
-
-                //Now delete the reply
-                await DeleteReplyAsync(e.Guild, reply);
-            }
+            await DeleteResponseAsync(e.Message, false);
         }
 
         private async Task HandleCommandsAsync(DSharpPlus.EventArgs.MessageUpdateEventArgs e)
@@ -79,6 +64,38 @@ namespace KoalaBot.Managers
                 await Bot.CommandsNext.ExecuteCommandAsync(fctx).ConfigureAwait(false);
             }
         }
+        
+        /// <summary>
+        /// Deletes the response for the message
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public async Task DeleteResponseAsync(DiscordMessage message, bool deleteReaction = true)
+        {
+
+            //Get the reply associated with the message
+            var reply = await GetReplyFromMessageAsync(message);
+            if (reply != null && reply.CommandMsg == message.Id)
+            {
+                //We are a reaction, so delete our reaction to the message (if we are allowed too)
+                if (deleteReaction && reply.ResponseType == Reply.SnowflakeType.Reaction)
+                {
+                    await message.DeleteOwnReactionAsync(DiscordEmoji.FromName(Bot.Discord, reply.ResponseEmote));
+                }
+
+                //We are just a message, so delete the message
+                if (reply.ResponseType == Reply.SnowflakeType.Message)
+                {
+                    //Get the response message and load it into our memory cache
+                    // then modify the contents of the message
+                    var msg = await message.Channel.GetMessageAsync(reply.ResponseMsg);
+                    if (msg != null) await msg.DeleteAsync("Deleted requesting method.");
+                }
+
+                //Now delete the reply
+                await DeleteReplyAsync(message.Channel.Guild, reply);
+            }
+        }
 
         /// <summary>
         /// Deletes all the responses in the specific channel
@@ -86,7 +103,7 @@ namespace KoalaBot.Managers
         /// <param name="channel"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        public async Task DeleteResponsesAsync(DiscordChannel channel, int count = 10)
+        public async Task DeleteAllResponseAsync(DiscordChannel channel, int count = 10)
         {
             //if (!(Redis is StackExchangeClient))
             //    throw new Exception("The redis client must be a StackExchangeClient to utlise the SCAN.");
@@ -118,7 +135,7 @@ namespace KoalaBot.Managers
             DiscordMessage response = null;
 
             //This is a command, so lets make sure we have a response
-            var reply = await GetReplyFromEditAsync(ctx.Message);
+            var reply = await GetReplyFromMessageAsync(ctx.Message);
             if (reply != null && reply.CommandMsg == ctx.Message.Id)
             {
                 //We are a reaction. We cannot create a new reaction, but we will remove our old one
@@ -158,7 +175,7 @@ namespace KoalaBot.Managers
         public async Task ReactAsync(CommandContext ctx, DiscordEmoji reaction)
         {
             //If we have a response, check it
-            var reply = await GetReplyFromEditAsync(ctx.Message);
+            var reply = await GetReplyFromMessageAsync(ctx.Message);
             if (reply != null && reply.CommandMsg == ctx.Message.Id)
             {
                 //We are a reaction. We cannot create a new reaction, but we will remove our old one
@@ -193,7 +210,7 @@ namespace KoalaBot.Managers
         /// </summary>
         /// <param name="editedMessage"></param>
         /// <returns></returns>
-        public async Task<Reply> GetReplyFromEditAsync(DiscordMessage editedMessage)
+        public async Task<Reply> GetReplyFromMessageAsync(DiscordMessage editedMessage)
         {
             return await GetReplyAsync(editedMessage.Channel.GuildId, editedMessage.Id);
         }

@@ -123,31 +123,37 @@ namespace KoalaBot.Starwatch
 
         #endregion
 
-
         #region Backup
 
         /// <summary>
-        /// Gets a backup
+        /// Gets the restore information
         /// </summary>
         /// <param name="world"></param>
         /// <returns></returns>
-        public async Task<Response<Backup>> GetBackupAsync(World world) => await GetRequestAsync<Backup>($"/world/{world.Whereami}/backup");
+        public async Task<Response<Restore>> GetRestoreAsync(World world) => await GetRequestAsync<Restore>($"/world/{world.Whereami}/restore");
 
         /// <summary>
-        /// Edits a backup
+        /// Sets the mirror information
         /// </summary>
         /// <param name="world"></param>
         /// <param name="backup"></param>
         /// <returns></returns>
-        public async Task<Response<Backup>> EditBackupAsync(World world, Backup backup) => await PutRequestAsync<Backup>($"/world/{world.Whereami}/backup", payload: backup);
+        public async Task<Response<Restore>> SetRestoreMirrorAsync(World world, World mirror) => await PutRequestAsync<Restore>($"/world/{world.Whereami}/restore", payload: new Restore() { World = world.Whereami, Mirror = mirror.Whereami });
 
         /// <summary>
-        /// Delete a backup
+        /// Deletes the restore
         /// </summary>
         /// <param name="world"></param>
         /// <param name="backup"></param>
         /// <returns></returns>
-        public async Task<Response<bool>> DeleteBackupAsync(World world, bool deleteFiles) => await DeleteRequestAsync<bool>($"/world/{world.Whereami}/backup", new Dictionary<string, object>() { { "delete", deleteFiles } });
+        public async Task<Response<bool>> DeleteRestoreAsync(World world) => await DeleteRequestAsync<bool>($"/world/{world.Whereami}/restore");
+
+        /// <summary>
+        /// Creates a new restore.
+        /// </summary>
+        /// <param name="world"></param>
+        /// <returns></returns>
+        public async Task<Response<Restore>> CreateRestoreAsync(World world) => await PostRequestAsync<Restore>($"/world/{world.Whereami}/restore", payload: new Restore() { World = world.Whereami });
 
         #endregion
 

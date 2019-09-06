@@ -6,11 +6,11 @@ using System.Text;
 
 namespace KoalaBot.Starwatch.Entities
 {
-    public class Backup
+    public class Restore
     {
-        public bool IsRolling { get; set; }
-        public bool IsAutoRestore { get; set; }
-        public DateTime? LastBackup { get; set; }
+        public string World { get; set; }
+        public string Mirror { get; set; }
+        public int Priority { get; set; }
     }
 
 }

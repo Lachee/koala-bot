@@ -15,6 +15,7 @@ using KoalaBot.CommandNext;
 using KoalaBot.Starwatch.Entities;
 using DSharpPlus.Interactivity;
 using KoalaBot.Util;
+using KoalaBot.Starwatch.Exceptions;
 
 namespace KoalaBot.Modules.Starwatch
 {
@@ -146,12 +147,29 @@ namespace KoalaBot.Modules.Starwatch
             await ctx.ReplyWorkingAsync();
 
             var response = await Starwatch.GetSessionsAsync(account, character, ip, uuid);
-            var lines = new string[] {
-                "**Characters**\n```\n" + string.Join("\n", response.Payload.Select(s => s.Username).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
-                "**Accounts**\n```\n" + string.Join("\n", response.Payload.Select(s => s.Account).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
-                "**UUIDs**\n```\n" + string.Join("\n", response.Payload.Select(s => s.UUID).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
-                "**IPs**\n```\n" + string.Join("\n",response.Payload.Select(s => s.IP).Where(s => !string.IsNullOrEmpty(s)).ToHashSet()) + "\n```",
-            };
+
+            //Something else, throw an exception
+            if (response.Status != RestStatus.OK)
+                throw new RestResponseException(response);
+
+
+            var Username = response.Payload.Select(s => s.Username).Where(s => !string.IsNullOrEmpty(s)).ToHashSet();
+            var Account = response.Payload.Select(s => s.Account).Where(s => !string.IsNullOrEmpty(s)).ToHashSet();
+            var UUID = response.Payload.Select(s => s.UUID).Where(s => !string.IsNullOrEmpty(s)).ToHashSet();
+            var IP = response.Payload.Select(s => s.IP).Where(s => !string.IsNullOrEmpty(s)).ToHashSet();
+
+            var lines = new List<string>();
+            lines.Add("**Usernames**");
+            lines.AddRange(Username);
+
+            lines.Add("**Account**");
+            lines.AddRange(Account);
+
+            lines.Add("**UUID**");
+            lines.AddRange(UUID);
+
+            lines.Add("**Usernames**");
+            lines.AddRange(IP);
 
             await ctx.ReplyAsync(string.Join('\n', lines));
         }

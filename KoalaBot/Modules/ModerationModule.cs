@@ -37,7 +37,7 @@ namespace KoalaBot.Modules
         [Permission("koala.mod.cleanup")]
         public async Task Cleanup(CommandContext ctx, [Description("Number of messages to delete")] int count = 10)
         {
-            await Bot.ReplyManager.DeleteResponsesAsync(ctx.Channel, count);
+            await Bot.ReplyManager.DeleteAllResponseAsync(ctx.Channel, count);
             await ctx.ReplyReactionAsync(true);
         }
 
