@@ -113,6 +113,7 @@ namespace KoalaBot.Managers
         {
             var settings = await member.Guild.GetSettingsAsync();
             if (!settings.PermissionAwardRoles) return false;
+            return false;
 
             var stopwatch = Stopwatch.StartNew();
             var mg = await GetMemberGroupAsync(member);
