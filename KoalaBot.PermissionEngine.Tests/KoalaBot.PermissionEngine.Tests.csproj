@@ -16,4 +16,10 @@
     <ProjectReference Include="..\KoalaBot.PermissionEngine\KoalaBot.PermissionEngine.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\export_90544484886011904_Lachee.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

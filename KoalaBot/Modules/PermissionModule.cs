@@ -98,7 +98,6 @@ namespace KoalaBot.Modules
             var engine = PermissionManager.GetEngine(ctx.Guild);
             await engine.ImportAsync(content);
             await ctx.ReplyAsync("Imported. Took " + sw.ElapsedMilliseconds + "ms");
-
         }
 
         [Command("tree")]

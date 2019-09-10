@@ -94,6 +94,9 @@ namespace KoalaBot.Extensions
         [RedisProperty]
         public ulong ModLogId { get; set; } = 0;
 
+        [RedisProperty]
+        public bool PermissionAwardRoles { get; set; } = true;
+
         public GuildSettings() { }
         public GuildSettings(DiscordGuild guild, string prefix)
         {

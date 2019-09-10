@@ -93,6 +93,8 @@ namespace KoalaBot.PermissionEngine
 
         public Task<Group> GetGroupAsync(string name) => Store.GetGroupAsync(this, name);
 
+        public Task<IEnumerable<Group>> GetGroupsAsync() => Store.GetGroupsEnumerableAsync(this);
+
         internal Task<Group> GetGroupAsync(Permission permission)
         {
             if (!permission.IsGroup)

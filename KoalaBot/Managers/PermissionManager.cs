@@ -111,24 +111,24 @@ namespace KoalaBot.Managers
         /// <returns></returns>
         public async Task<bool> ApplyRolesAsync(DiscordMember member)
         {
-            return false;
+            var settings = await member.Guild.GetSettingsAsync();
+            if (!settings.PermissionAwardRoles) return false;
 
             var stopwatch = Stopwatch.StartNew();
             var mg = await GetMemberGroupAsync(member);
 
             //Get all the group permissions
-            var roleGroups = await mg.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\..*"));
-            var rolesAfter = member.Roles.ToDictionary<DiscordRole, ulong>(r => r.Id);
-            bool changed = false;
+            var rolePermissions = await mg.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\.[0-9]*$"));
+            var rolesAfter      = member.Roles.ToDictionary<DiscordRole, ulong>(r => r.Id);
+            bool changed        = false;
 
-            foreach(var group in roleGroups)
+            foreach(var permission in rolePermissions)
             {
-                ulong id = ulong.Parse(group.GroupName.Substring(5));
-                switch (group.State)
+                ulong id = ulong.Parse(permission.GroupName.Substring(5));
+                switch (permission.State)
                 {
                     case StateType.Deny:
-                        if (rolesAfter.Remove(id))
-                            changed = true;
+                        if (rolesAfter.Remove(id)) changed = true;
                         break;
 
                     case StateType.Allow:

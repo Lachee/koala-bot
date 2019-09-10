@@ -199,8 +199,45 @@ namespace KoalaBot.PermissionEngine.Tests
             //When we minus a group, all our conditions should be deny
             Assert.Contains("-group.role.615065754118651937", collapsed);
         }
-    }
 
+        [Fact]
+        public async void EC07_CanLoadTestData()
+        {
+            var engine = new Engine();
+
+            var file = "Data/export_90544484886011904_Lachee.txt";
+            var contents = await System.IO.File.ReadAllTextAsync(file);
+
+            await engine.ImportAsync(contents);
+            var group = await engine.GetGroupAsync("comstaff");
+            Assert.NotNull(group);
+        }
+
+        [Fact]
+        public async void EC08_PermisisonsMatch()
+        {
+            var engine = new Engine();
+
+            var file = "Data/export_90544484886011904_Lachee.txt";
+            var contents = await System.IO.File.ReadAllTextAsync(file);
+
+            await engine.ImportAsync(contents);
+
+            var groups = await engine.GetGroupsAsync();
+            foreach(var g in groups)
+            {
+                foreach(var p in g.PermissionsEnumerable())
+                {
+                    var eval = await g.EvaluatePermissionAsync(p.Name);
+                    var patt = (await g.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(p.Name.Replace(".", "\\.")))).FirstOrDefault();
+
+                    Assert.Equal(p.Name, patt.Name);
+                    Assert.Equal(eval, patt.State);
+                }
+            }
+        }
+
+    }
 
 
 

@@ -52,12 +52,57 @@ namespace KoalaBot.PermissionEngine.Tests
             var group = await engine.GetGroupAsync("groupa");
             Assert.NotNull(group);
 
-            var perms = await group.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\..*"));
+            var perms = await group.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\..*$"));
             foreach (var p in perms)
             {
                 var m = await group.EvaluatePermissionAsync(p.Name);
                 Assert.Equal(m, p.State);
             }
+        }
+    
+        [Fact]
+        public async void Eval_PatternMatchHasNoDuplicates()
+        {
+
+            var engine = new Engine();
+            await engine.ImportAsync(@"
+                ::groupa
+                +koala.fruit.apricot
+                +koala.execute.channel
+                +group.role.admin
+                +group.role.bacon.and.eggs
+                -group.role.second
+                
+                ::role.admin
+                +koala.fruit.mango
+                +group.secondorder
+    
+                ::role.bacon.and.eggs
+                +koala.fruit.apple
+                -group.role.admin
+                +group.role.second
+
+                ::role.second
+                -koala.bacon
+
+                ::secondorder
+                +koala.fruit.orange
+            ");
+
+            //Get the group
+            var group = await engine.GetGroupAsync("groupa");
+            Assert.NotNull(group);
+
+            //Evaluate the permissions
+            var perms = await group.EvaluatePatternAsync(new System.Text.RegularExpressions.Regex(@"group\.role\..*$"));
+           
+            //Make sure there isn't any duplicates
+            HashSet<string> names = new HashSet<string>();
+            foreach (var p in perms)
+            {
+                Assert.True(names.Add(p.Name));
+            }
+
         }
 
         [Fact]
