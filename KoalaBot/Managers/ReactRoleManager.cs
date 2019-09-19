@@ -15,6 +15,7 @@ namespace KoalaBot.Managers
 
         public ReactRoleManager(Koala bot, Logger logger = null) : base(bot, logger)
         {
+            /*
             Discord.MessageDeleted += async (args) =>
             {
                 //Remove the reactions that we stored.
@@ -46,6 +47,7 @@ namespace KoalaBot.Managers
                 var gm = await args.Channel.Guild.GetMemberAsync(args.User);
                 await gm.RevokeRoleAsync(r, "Reaction Role");
             };
+            */
         }
 
         /// <summary>
