@@ -120,8 +120,8 @@ namespace KoalaBot.Modules.Starwatch
                 if (string.IsNullOrWhiteSpace(account))
                     throw new ArgumentNullException("account");
 
-                //if (!await ctx.Member.HasPermissionAsync($"sw.protection.add.{world.Whereami}", false, allowUnset: true))
-                //    throw new PermissionException($"sw.protection.add.{world.Whereami}");
+                if (!await ctx.Member.HasPermissionAsync($"sw.protection.add.{world.Whereami}", false, allowUnset: true))
+                    throw new PermissionException($"sw.protection.add.{world.Whereami}");
 
                 //Adds an account to the protection
                 var response = await Starwatch.CreateProtectedAccountAsync(world, account, ctx.Member + " added user");

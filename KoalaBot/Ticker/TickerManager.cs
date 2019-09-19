@@ -55,7 +55,7 @@ namespace KoalaBot.Ticker
             try
             {
                 //Tick
-                Logger.Log("Ticking Activity with {0}", ticker);
+                //Logger.Log("Ticking Activity with {0}", ticker);
                 activity = await ticker.GetActivityAsync(this);
             }
             catch (Exception ex)

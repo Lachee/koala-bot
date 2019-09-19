@@ -168,7 +168,7 @@ namespace KoalaBot.Modules.Starwatch
             lines.Add("**UUID**");
             lines.AddRange(UUID);
 
-            lines.Add("**Usernames**");
+            lines.Add("**IPs**");
             lines.AddRange(IP);
 
             await ctx.ReplyAsync(string.Join('\n', lines));
