@@ -41,7 +41,7 @@ namespace KoalaBot.Modules.Starwatch
             public async Task EnableAccount(CommandContext ctx, [Description("The name of the account to enable")] string account)
             {
                 await ctx.ReplyWorkingAsync();
-                var response = await Starwatch.UpdateAccountAsync(account, new Account() { IsActive = false});
+                var response = await Starwatch.UpdateAccountAsync(account, new Account() { IsActive = true});
 
                 if (response.Status != RestStatus.OK)
                     throw new RestResponseException(response);
@@ -55,7 +55,7 @@ namespace KoalaBot.Modules.Starwatch
             public async Task DisableAccount(CommandContext ctx, [Description("The name of the account to enable")] string account)
             {
                 await ctx.ReplyWorkingAsync();
-                var response = await Starwatch.UpdateAccountAsync(account, new Account() { IsActive = true });
+                var response = await Starwatch.UpdateAccountAsync(account, new Account() { IsActive = false });
 
                 if (response.Status != RestStatus.OK)
                     throw new RestResponseException(response);
