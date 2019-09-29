@@ -23,32 +23,32 @@ namespace KoalaBot.Ticker
             {
                 var stats = await Client.GetStatisticsAsync();
                 if (!stats.Success) throw new Exception("Statistics Failed.");
+
+                string text;
+                int connections = stats.Payload.Connections;
+
+                switch (connections)
+                {
+                    default:
+                        text = connections + " Players";
+                        break;
+
+                    case 0:
+                        text = "Nobody";
+                        break;
+
+                    case 1:
+                        text = "A single player";
+                        break;
+                }
+
+
+                return new DiscordActivity(text, ActivityType.Watching);
             }
             catch (Exception e)
             {
                 throw e;
             }
-
-            string text;
-            int connections = stats.Payload.Connections;
-
-            switch (connections)
-            {
-                default:
-                    text = connections + " Players";
-                    break;
-
-                case 0:
-                    text = "Nobody";
-                    break;
-
-                case 1:
-                    text = "A single player";
-                    break;
-            }
-
-
-            return new DiscordActivity(text, ActivityType.Watching);
-		}
+        }
 	}
 }
