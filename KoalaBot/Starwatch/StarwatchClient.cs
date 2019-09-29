@@ -184,6 +184,15 @@ namespace KoalaBot.Starwatch
 
         #endregion
 
+        #region Account
+        public async Task<Response<Account>> GetAccountAsync(string name) => await GetRequestAsync<Account>($"/account/{name}");
+
+        public async Task<Response<Account>> UpdateAccountAsync(string name, Account account) => await PutRequestAsync<Account>($"/account/{name}", payload: account);
+
+        public async Task<Response<bool>> DeleteAccountAsync(string name) => await DeleteRequestAsync<bool>($"/account/{name}");
+
+        #endregion
+
         /// <summary>
         /// Gets the statistics of the server
         /// </summary>

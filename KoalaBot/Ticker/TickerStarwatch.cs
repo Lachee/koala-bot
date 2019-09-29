@@ -19,8 +19,15 @@ namespace KoalaBot.Ticker
 
 		public async Task<DiscordActivity> GetActivityAsync(TickerManager manager)
         {
-            var stats = await Client.GetStatisticsAsync();
-            if (!stats.Success) throw new Exception("Statistics Failed.");
+            try
+            {
+                var stats = await Client.GetStatisticsAsync();
+                if (!stats.Success) throw new Exception("Statistics Failed.");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
 
             string text;
             int connections = stats.Payload.Connections;
