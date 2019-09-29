@@ -47,7 +47,7 @@ namespace KoalaBot.Modules.Starwatch
                     throw new RestResponseException(response);
 
                 //Build the response                
-                await ctx.ReplyReactionAsync(!response.Payload.IsActive.GetValueOrDefault());
+                await ctx.ReplyReactionAsync(response.Payload.IsActive.GetValueOrDefault());
             }
             [Command("disable")]
             [Permission("sw.acc.disable")]
@@ -61,7 +61,7 @@ namespace KoalaBot.Modules.Starwatch
                     throw new RestResponseException(response);
 
                 //Build the response                
-                await ctx.ReplyReactionAsync(response.Payload.IsActive.GetValueOrDefault());
+                await ctx.ReplyReactionAsync(!response.Payload.IsActive.GetValueOrDefault());
             }
 
         }
