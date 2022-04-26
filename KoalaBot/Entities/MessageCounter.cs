@@ -149,14 +149,8 @@ namespace KoalaBot.Entities
 
                 //Execute the transaction
                 await transaction.ExecuteAsync();
-
                 if (ChangesSynced != null)
-                {
-                    ChangesSynced.Invoke(this, new ChangesSyncedEventArgs(changedUsers, changedGuilds));
-                }
-
-                //if (ChangesSynced != null)
-                //    await ChangesSynced?.Invoke(new ChangesSyncedEventArgs(changedUsers, changedGuilds));
+                    await ChangesSynced?.Invoke(new ChangesSyncedEventArgs(changedUsers, changedGuilds));
                 
                 //Clear the tallies
                 _userTallies.Clear();
