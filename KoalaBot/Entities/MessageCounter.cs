@@ -63,14 +63,14 @@ namespace KoalaBot.Entities
             _syncTimer.Elapsed += async (sender, args) => await SyncChanges();
             _syncTimer.Start();
 
-            bot.Discord.MessageCreated += async (args) =>
+            bot.Discord.MessageCreated += async (sender, args) =>
             {
                 if (args.Author.IsBot) return;
                 await RecordMessage(args.Message);
             };
         }
 
-        public async Task RecordMessage(DiscordMessage message) => await RecordMessage(message.Author.Id, message.Channel.GuildId);
+        public async Task RecordMessage(DiscordMessage message) => await RecordMessage(message.Author.Id, (ulong) message.Channel.GuildId);
         private async Task RecordMessage(ulong userId, ulong guildId)
         {   
             //Sync the semaphore
