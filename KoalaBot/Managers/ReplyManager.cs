@@ -28,7 +28,7 @@ namespace KoalaBot.Managers
             Bot.Discord.MessageDeleted += HandleMessageDelete;
         }
 
-        private async Task HandleMessageDelete(DSharpPlus.EventArgs.MessageDeleteEventArgs e)
+        private async Task HandleMessageDelete(DSharpPlus.DiscordClient client, DSharpPlus.EventArgs.MessageDeleteEventArgs e)
         {
             //Skip if its invalid
             if (e == null) return;
@@ -37,7 +37,7 @@ namespace KoalaBot.Managers
             await DeleteResponseAsync(e.Message, false);
         }
 
-        private async Task HandleCommandsAsync(DSharpPlus.EventArgs.MessageUpdateEventArgs e)
+        private async Task HandleCommandsAsync(DSharpPlus.DiscordClient client, DSharpPlus.EventArgs.MessageUpdateEventArgs e)
         {
             //Skip if its invalid
             if (e == null) return;
@@ -212,7 +212,7 @@ namespace KoalaBot.Managers
         /// <returns></returns>
         public async Task<Reply> GetReplyFromMessageAsync(DiscordMessage editedMessage)
         {
-            return await GetReplyAsync(editedMessage.Channel.GuildId, editedMessage.Id);
+            return await GetReplyAsync((ulong) editedMessage.Channel.GuildId, editedMessage.Id);
         }
 
         /// <summary>
