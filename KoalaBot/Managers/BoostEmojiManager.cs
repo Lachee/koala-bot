@@ -16,12 +16,12 @@ namespace KoalaBot.Managers
     {
         public BoostEmojiManager(Koala bot, Logger logger = null) : base(bot, logger)
         {
-            Discord.GuildMemberRemoved += async (args) =>
+            Discord.GuildMemberRemoved += async (client, args) =>
             {
                 await DeleteEmojiAsync(args.Member);
             };
 
-            Discord.GuildMemberUpdated += async (args) =>
+            Discord.GuildMemberUpdated += async (client, args) =>
             {
                 if (!args.Member.PremiumSince.HasValue)
                     await DeleteEmojiAsync(args.Member);
