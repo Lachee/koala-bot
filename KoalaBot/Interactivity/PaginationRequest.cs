@@ -24,6 +24,17 @@ namespace KoalaBot.Interactivity
         private DiscordUser _user;
         private int index = 0;
 
+        public int PageCount
+        {
+            get
+            {
+                if (_pages == null)
+                    throw new ArgumentNullException(nameof(_pages), "Could not get PageCount for Pagination.");
+
+                return _pages.Count;
+            }
+        }
+
         /// <summary>
         /// Creates a new Pagination request
         /// </summary>
@@ -185,6 +196,13 @@ namespace KoalaBot.Interactivity
         {
             this._ct.Dispose();
             this._tcs = null;
+        }
+
+        public Task<IEnumerable<DiscordButtonComponent>> GetButtonsAsync()
+        {
+#warning "This code is not complete and still needs implemented. Left placeholder code for stability."
+            var x = (IEnumerable<DiscordButtonComponent>) new List<DiscordButtonComponent>();
+            return Task.FromResult(x);
         }
     }
 }
