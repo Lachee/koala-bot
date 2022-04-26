@@ -229,7 +229,11 @@ namespace KoalaBot
         {
             Logger.LogError(exception);
             var hook = await Discord.GetWebhookAsync(Configuration.ErrorWebhook);
-            await hook.ExecuteAsync("An error has occured on " + Discord.CurrentApplication.Name + ". ", embeds: new DiscordEmbed[] {
+            DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
+
+            builder.Content = $"An error has occurred on {Discord.CurrentApplication.Name}.";
+
+            builder.AddEmbeds(new DiscordEmbed[] {
                 exception.ToEmbed(),
                 new DiscordEmbedBuilder()
                 {
@@ -240,7 +244,9 @@ namespace KoalaBot
                 .AddField("Guild", context?.Channel.GuildId.ToString())
                 .AddField("Channel", context?.Channel.Id.ToString())
                 .AddField("Message", context?.Id.ToString())
-            }, files: null);
+            });
+
+            await hook.ExecuteAsync(builder);
         }
 
 
