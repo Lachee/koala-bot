@@ -45,7 +45,7 @@ namespace KoalaBot.Managers
         {
             _guildEngines = new Dictionary<ulong, Engine>();
 
-            Bot.Discord.GuildAvailable += (args) =>
+            Bot.Discord.GuildAvailable += (client, args) =>
             {
                 Logger.Log("Loading Guild {0}", args.Guild);
                 var gm = new Engine(new RedisStore(Redis, Namespace.Join(Namespace.RootNamespace, args.Guild.Id.ToString(), "perms")));
@@ -53,7 +53,7 @@ namespace KoalaBot.Managers
                 return Task.CompletedTask;
             };
 
-            Bot.Discord.GuildUnavailable += (args) =>
+            Bot.Discord.GuildUnavailable += (client, args) =>
             {
                 Logger.Log("Clearing Guild {0}", args.Guild);
                 _guildEngines.Remove(args.Guild.Id);
@@ -70,7 +70,7 @@ namespace KoalaBot.Managers
             };
             */
 
-            Bot.Discord.GuildRoleDeleted += async (args) =>
+            Bot.Discord.GuildRoleDeleted += async (client, args) =>
             {
                 Logger.Log("Deleting Role {0}", args.Role);
                 var group = await GetRoleGroupAsync(args.Guild, args.Role);

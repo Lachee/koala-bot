@@ -124,7 +124,7 @@ namespace KoalaBot
             //Catch when any errors occur in the command handler
             //Send any command errors back after logging it.
             Logger.Log("Registering Error Listeners");
-            this.Discord.ClientErrored += async (error) => await LogException(error.Exception);
+            this.Discord.ClientErrored += async (client, error) => await LogException(error.Exception);
             this.CommandsNext.CommandErrored += HandleCommandErrorAsync;
             
             Logger.Log("Done");
@@ -249,7 +249,7 @@ namespace KoalaBot
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        private async Task HandleCommandExecuteAsync(CommandExecutionEventArgs e)
+        private async Task HandleCommandExecuteAsync(CommandsNextExtension ext, CommandExecutionEventArgs e)
         {
             //Save the execution to the database
             var cmdlog = new CommandLog(e.Context, failure: null);
@@ -261,7 +261,7 @@ namespace KoalaBot
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        private async Task HandleCommandErrorAsync(CommandErrorEventArgs e)
+        private async Task HandleCommandErrorAsync(CommandsNextExtension ext, CommandErrorEventArgs e)
         {
             //Log the exception
             Logger.LogError(e.Exception);
