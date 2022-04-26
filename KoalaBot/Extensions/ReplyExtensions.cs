@@ -4,6 +4,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -124,7 +125,19 @@ namespace KoalaBot.Extensions
 
             var ems = emojis ?? new PaginationEmojis();
             var prequest = new KoalaBot.Interactivity.PaginationRequest(m, ctx.Member, behaviour, deletion, ems, timeout, pages.ToArray());
-            await ctx.Client.GetInteractivity().WaitForCustomPaginationAsync(prequest);
+            
+            //await ctx.Client.GetInteractivity().WaitForCustomPaginationAsync(prequest);
+        }
+
+        public static async Task RespondWithFileAsync (this CommandContext ctx, string filePath, string content)
+        {
+            FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+            DiscordMessageBuilder builder = new DiscordMessageBuilder();
+            builder.WithFile(fs);
+            builder.Content = content;
+
+            await ctx.Client.SendMessageAsync(ctx.Channel, builder);
         }
     }
 }
