@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Net.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using KoalaBot.Entities;
