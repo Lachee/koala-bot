@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Emzi0767.Utilities;
 
 namespace KoalaBot.Entities
 {
@@ -20,7 +21,7 @@ namespace KoalaBot.Entities
         private SemaphoreSlim _semaphore;
         private System.Timers.Timer _syncTimer;
 
-        public event AsyncEventHandler<ChangesSyncedEventArgs> ChangesSynced;
+        public event AsyncEventHandler<DiscordClient, ChangesSyncedEventArgs> ChangesSynced;
         public class ChangesSyncedEventArgs : AsyncEventArgs
         {
             public IReadOnlyCollection<ulong> UpdatedUsers { get; }
@@ -150,7 +151,7 @@ namespace KoalaBot.Entities
                 //Execute the transaction
                 await transaction.ExecuteAsync();
                 if (ChangesSynced != null)
-                    await ChangesSynced?.Invoke(new ChangesSyncedEventArgs(changedUsers, changedGuilds));
+                    await ChangesSynced?.Invoke(Bot.Discord, new ChangesSyncedEventArgs(changedUsers, changedGuilds));
                 
                 //Clear the tallies
                 _userTallies.Clear();
