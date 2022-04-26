@@ -20,8 +20,8 @@ namespace KoalaBot.Entities
         private SemaphoreSlim _semaphore;
         private System.Timers.Timer _syncTimer;
 
-        public event AsyncEventHandler<ChangesSyncedEventArgs> ChangesSynced;
-        public class ChangesSyncedEventArgs : AsyncEventArgs
+        public event EventHandler<ChangesSyncedEventArgs> ChangesSynced;
+        public class ChangesSyncedEventArgs : EventArgs
         {
             public IReadOnlyCollection<ulong> UpdatedUsers { get; }
             public IReadOnlyCollection<ulong> UpdatedGuilds { get; }
