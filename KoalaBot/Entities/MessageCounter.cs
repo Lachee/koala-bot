@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Emzi0767.Utilities;
 
 namespace KoalaBot.Entities
 {
@@ -20,7 +21,7 @@ namespace KoalaBot.Entities
         private SemaphoreSlim _semaphore;
         private System.Timers.Timer _syncTimer;
 
-        public event AsyncEventHandler<ChangesSyncedEventArgs> ChangesSynced;
+        public event AsyncEventHandler<DiscordClient, ChangesSyncedEventArgs> ChangesSynced;
         public class ChangesSyncedEventArgs : AsyncEventArgs
         {
             public IReadOnlyCollection<ulong> UpdatedUsers { get; }
@@ -63,14 +64,14 @@ namespace KoalaBot.Entities
             _syncTimer.Elapsed += async (sender, args) => await SyncChanges();
             _syncTimer.Start();
 
-            bot.Discord.MessageCreated += async (args) =>
+            bot.Discord.MessageCreated += async (sender, args) =>
             {
                 if (args.Author.IsBot) return;
                 await RecordMessage(args.Message);
             };
         }
 
-        public async Task RecordMessage(DiscordMessage message) => await RecordMessage(message.Author.Id, message.Channel.GuildId);
+        public async Task RecordMessage(DiscordMessage message) => await RecordMessage(message.Author.Id, (ulong) message.Channel.GuildId);
         private async Task RecordMessage(ulong userId, ulong guildId)
         {   
             //Sync the semaphore
@@ -150,7 +151,7 @@ namespace KoalaBot.Entities
                 //Execute the transaction
                 await transaction.ExecuteAsync();
                 if (ChangesSynced != null)
-                    await ChangesSynced?.Invoke(new ChangesSyncedEventArgs(changedUsers, changedGuilds));
+                    await ChangesSynced?.Invoke(Bot.Discord, new ChangesSyncedEventArgs(changedUsers, changedGuilds));
                 
                 //Clear the tallies
                 _userTallies.Clear();

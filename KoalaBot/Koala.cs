@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Net.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using KoalaBot.Entities;
@@ -124,7 +125,7 @@ namespace KoalaBot
             //Catch when any errors occur in the command handler
             //Send any command errors back after logging it.
             Logger.Log("Registering Error Listeners");
-            this.Discord.ClientErrored += async (error) => await LogException(error.Exception);
+            this.Discord.ClientErrored += async (client, error) => await LogException(error.Exception);
             this.CommandsNext.CommandErrored += HandleCommandErrorAsync;
             
             Logger.Log("Done");
@@ -229,7 +230,11 @@ namespace KoalaBot
         {
             Logger.LogError(exception);
             var hook = await Discord.GetWebhookAsync(Configuration.ErrorWebhook);
-            await hook.ExecuteAsync("An error has occured on " + Discord.CurrentApplication.Name + ". ", embeds: new DiscordEmbed[] {
+            DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
+
+            builder.Content = $"An error has occurred on {Discord.CurrentApplication.Name}.";
+
+            builder.AddEmbeds(new DiscordEmbed[] {
                 exception.ToEmbed(),
                 new DiscordEmbedBuilder()
                 {
@@ -240,7 +245,9 @@ namespace KoalaBot
                 .AddField("Guild", context?.Channel.GuildId.ToString())
                 .AddField("Channel", context?.Channel.Id.ToString())
                 .AddField("Message", context?.Id.ToString())
-            }, files: null);
+            });
+
+            await hook.ExecuteAsync(builder);
         }
 
 
@@ -249,7 +256,7 @@ namespace KoalaBot
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        private async Task HandleCommandExecuteAsync(CommandExecutionEventArgs e)
+        private async Task HandleCommandExecuteAsync(CommandsNextExtension ext, CommandExecutionEventArgs e)
         {
             //Save the execution to the database
             var cmdlog = new CommandLog(e.Context, failure: null);
@@ -261,7 +268,7 @@ namespace KoalaBot
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        private async Task HandleCommandErrorAsync(CommandErrorEventArgs e)
+        private async Task HandleCommandErrorAsync(CommandsNextExtension ext, CommandErrorEventArgs e)
         {
             //Log the exception
             Logger.LogError(e.Exception);

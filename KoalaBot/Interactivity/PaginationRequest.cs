@@ -1,6 +1,5 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Concurrency;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.EventHandling;
 using System;
@@ -24,6 +23,17 @@ namespace KoalaBot.Interactivity
         private PaginationEmojis _emojis;
         private DiscordUser _user;
         private int index = 0;
+
+        public int PageCount
+        {
+            get
+            {
+                if (_pages == null)
+                    throw new ArgumentNullException(nameof(_pages), "Could not get PageCount for Pagination.");
+
+                return _pages.Count;
+            }
+        }
 
         /// <summary>
         /// Creates a new Pagination request
@@ -84,7 +94,6 @@ namespace KoalaBot.Interactivity
 
             switch (_behaviour)
             {
-                case PaginationBehaviour.Default:
                 case PaginationBehaviour.Ignore:
                     if (index == _pages.Count - 1)
                         break;
@@ -109,7 +118,6 @@ namespace KoalaBot.Interactivity
 
             switch (_behaviour)
             {
-                case PaginationBehaviour.Default:
                 case PaginationBehaviour.Ignore:
                     if (index == 0)
                         break;
@@ -153,7 +161,6 @@ namespace KoalaBot.Interactivity
         {
             switch (_deletion)
             {
-                case PaginationDeletion.Default:
                 case PaginationDeletion.DeleteEmojis:
                     await _message.DeleteAllReactionsAsync();
                     break;
@@ -186,6 +193,13 @@ namespace KoalaBot.Interactivity
         {
             this._ct.Dispose();
             this._tcs = null;
+        }
+
+        public Task<IEnumerable<DiscordButtonComponent>> GetButtonsAsync()
+        {
+#warning "This code is not complete and still needs implemented. Left placeholder code for stability."
+            var x = (IEnumerable<DiscordButtonComponent>) new List<DiscordButtonComponent>();
+            return Task.FromResult(x);
         }
     }
 }

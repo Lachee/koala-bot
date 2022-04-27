@@ -14,5 +14,4 @@ This bot is using an experimental Node-Base permission engine that I have design
 * MySQL
 * Redis
 * Dotnet Core 2.0
-* D#+ Nightly Branch [Via SlimGet](https://nuget.emzi0767.com/api/v3/index.json)
 `nuget sources Add -Name "Emzi SlimGet" -Source https://nuget.emzi0767.com/api/v3/index.json`

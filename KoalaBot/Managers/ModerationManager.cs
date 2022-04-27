@@ -25,14 +25,14 @@ namespace KoalaBot.Managers
         public ModerationManager(Koala bot, Logger logger = null) : base(bot, logger)
         {
 
-            bot.Discord.GuildMemberAdded += async (evt) =>
+            bot.Discord.GuildMemberAdded += async (client, evt) =>
             {
                 //Try to enforce the nickname of new members. They may have left to bypass the enforcement
                 await TryEnforceNickname(evt.Member);
                 await TryEnforceBlackBacon(evt.Member);
             };
 
-            bot.Discord.GuildMemberUpdated += async (evt) =>
+            bot.Discord.GuildMemberUpdated += async (client, evt) =>
             {
                 if (evt.Member.IsBot) return;
 
@@ -49,12 +49,12 @@ namespace KoalaBot.Managers
                 }
             };
 
-            bot.Discord.GuildBanRemoved += async (evt) =>
+            bot.Discord.GuildBanRemoved += async (client, evt) =>
             {
                 _handledBans.Remove(evt.Member.Id);
             };
 
-            bot.Discord.GuildBanAdded += async (evt) =>
+            bot.Discord.GuildBanAdded += async (client, evt) =>
             {
                 if (!_handledBans.Remove(evt.Member.Id))
                 {
