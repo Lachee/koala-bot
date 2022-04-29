@@ -75,6 +75,7 @@ namespace KoalaBot.PermissionEngine.Store
 
         public async Task<bool> SaveGroupAsync(Group group)
         {
+            await this.DeleteGroupAsync(group);
             await this.AddGroupAsync(group);
             return true;
         }
