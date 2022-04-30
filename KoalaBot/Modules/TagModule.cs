@@ -14,7 +14,6 @@ using KoalaBot.CommandNext;
 namespace KoalaBot.Modules
 {
     [Group("tag")]
-    [Permission("koala.tag")]
     public class TagModule : BaseCommandModule
     {
         public Koala Bot { get; }
@@ -102,6 +101,7 @@ namespace KoalaBot.Modules
         }
 
         /// <summary>Fetches a tag</summary>
+        [Permission("koala.tag.view")]
         public async Task<Tag> GetTagAsync(DiscordGuild guild, string name)
         {
             name = name.ToLowerInvariant();     //First thing is we will lower the name. All names will be case insensitive.
@@ -111,9 +111,11 @@ namespace KoalaBot.Modules
         }
 
         /// <summary>Edits the tag</summary>
+        [Permission("koala.tag.edit")]
         public async Task EditTagAsync(DiscordGuild guild, Tag tag, string content) => await Redis.StoreStringAsync(Namespace.Combine(guild.Id, "tags", tag.Name), Tag.KEY_CONTENT, content);
 
         /// <summary>Creates a tag</summary>
+        [Permission("koala.tag.create")]
         public async Task<Tag> CreateTagAsync(DiscordGuild guild, DiscordUser owner, string name, string content)
         {
             Tag tag = new Tag()
@@ -133,6 +135,7 @@ namespace KoalaBot.Modules
         }
 
         /// <summary>Transfers a tag a tag</summary>
+        [Permission("koala.tag.transfer")]
         public async Task TransferTagAsync(DiscordGuild guild, DiscordUser newOwner, Tag tag)
         {
             var transaction = Redis.CreateTransaction();
@@ -143,6 +146,7 @@ namespace KoalaBot.Modules
         }
 
         /// <summary>Removes a tag</summary>
+        [Permission("koala.tag.remove")]
         public async Task RemoveTagAsync(DiscordGuild guild, Tag tag)
         {
             var transaction = Redis.CreateTransaction();
@@ -151,8 +155,6 @@ namespace KoalaBot.Modules
             _ = transaction.RemoveHashSetAsync(Namespace.Combine(guild.Id, tag.Owner, "tags"), tag.Name);   //Remove tag
             await transaction.ExecuteAsync();
         }
-
-
     }
 
     public class Tag
