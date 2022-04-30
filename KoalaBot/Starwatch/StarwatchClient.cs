@@ -187,6 +187,14 @@ namespace KoalaBot.Starwatch
         #region Account
         public async Task<Response<Account>> GetAccountAsync(string name) => await GetRequestAsync<Account>($"/account/{name}");
 
+        public async Task<Response<Account>> CreateAccountAsync(Account account)
+        {
+            if (account is null)
+                throw new ArgumentNullException(nameof(account));
+
+            return await PostRequestAsync<Account>($"/account", payload: account);
+        }
+
         public async Task<Response<Account>> UpdateAccountAsync(string name, Account account) => await PutRequestAsync<Account>($"/account/{name}", payload: account);
 
         public async Task<Response<bool>> DeleteAccountAsync(string name) => await DeleteRequestAsync<bool>($"/account/{name}");
