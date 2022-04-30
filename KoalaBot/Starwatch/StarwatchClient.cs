@@ -285,9 +285,6 @@ namespace KoalaBot.Starwatch
             //Read the json
             string json = await response.Content.ReadAsStringAsync();
 
-            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                throw new HttpRequestException("Bad Request");
-
             //Return the json object deserialized.
             var res = JsonConvert.DeserializeObject<Response<JToken>>(json);
             if (res == null) throw new Exception("Failed to get any response from the server. Got: " + json);
@@ -305,9 +302,6 @@ namespace KoalaBot.Starwatch
 
                 case RestStatus.TooManyRequests:
                     throw new RestRateLimitException(new Response<RateLimit>(res));
-
-                case RestStatus.InternalError:
-                    throw new RestResponseException(res);
 
                 //Return the response. Everything else can be handled.
                 default:
