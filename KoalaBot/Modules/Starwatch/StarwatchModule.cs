@@ -20,7 +20,6 @@ using KoalaBot.Starwatch.Exceptions;
 namespace KoalaBot.Modules.Starwatch
 {
     [Group("starwatch"), Aliases("sw", "s")]
-    [Permission("sw")]
     public partial class StarwatchModule : BaseCommandModule
     {
         public Koala Bot { get; }
@@ -138,6 +137,7 @@ namespace KoalaBot.Modules.Starwatch
         }
 
         [Command("search")]
+        [Permission("sw.search")]
         public async Task SearchSessions(CommandContext ctx,
             [Description("Account name to search")]     string account = null,
             [Description("Character name to search")]   string character = null,

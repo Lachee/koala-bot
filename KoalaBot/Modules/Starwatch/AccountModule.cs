@@ -34,7 +34,6 @@ namespace KoalaBot.Modules.Starwatch
                 this.Logger = new Logger("CMD-SW-ACC", bot.Logger);
             }
 
-
             [Command("enable")]
             [Permission("sw.acc.enable")]
             [Description("Enables an account")]
@@ -49,6 +48,7 @@ namespace KoalaBot.Modules.Starwatch
                 //Build the response                
                 await ctx.ReplyReactionAsync(true);
             }
+
             [Command("disable")]
             [Permission("sw.acc.disable")]
             [Description("Disables an account")]

@@ -72,7 +72,7 @@ namespace KoalaBot.Modules
             }
         }
 
-
+        [Permission("koala.fun.emoji")]
         public async Task SetBoosterEmoji(CommandContext ctx)
         {
             if (ctx.Message.Attachments.Count == 0)
@@ -81,6 +81,7 @@ namespace KoalaBot.Modules
             await SetBoosterEmoji(ctx, ctx.Message.Attachments[0].Url);
         }
 
+        [Permission("koala.fun.emoji")]
         public async Task SetBoosterEmoji(CommandContext ctx, string url)
         {
             if (string.IsNullOrEmpty(url))

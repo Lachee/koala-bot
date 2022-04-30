@@ -42,6 +42,7 @@ namespace KoalaBot.Modules.Starwatch
 
             [Command("alias")]
             [Description("Sets the specified alias.")]
+            [Permission("sw.world.alias")]
             public async Task SetAlias(CommandContext ctx, string alias, World world = null)
             {
                 //World is null, so delete the alias
