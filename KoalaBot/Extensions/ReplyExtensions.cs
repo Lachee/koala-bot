@@ -104,6 +104,18 @@ namespace KoalaBot.Extensions
                 .WithColor(EmbedExtensions.ErrorColour));
 
         /// <summary>
+        /// Deletes the sender's message before replying.
+        /// </summary>
+        public static async Task ReplyDeleteAsync (this CommandContext ctx, string message)
+        {
+            var dChannel = ctx.Channel;
+            var dMessage = ctx.Message;
+
+            await dMessage.DeleteAsync();
+            await dChannel.SendMessageAsync(message);
+        }
+
+        /// <summary>
         /// Replys with a paginated message
         /// </summary>
         /// <param name="c"></param>
