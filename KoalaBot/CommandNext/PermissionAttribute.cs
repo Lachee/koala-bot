@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KoalaBot.CommandNext
 {
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class PermissionAttribute : CheckBaseAttribute
     {
 
