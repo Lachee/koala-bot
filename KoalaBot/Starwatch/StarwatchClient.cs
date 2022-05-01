@@ -57,7 +57,11 @@ namespace KoalaBot.Starwatch
         /// <returns></returns>
         public async Task<RestResponse> ReloadAsync(bool wait)
         {
-            return await PutRequestAsync<object>("/server", new Dictionary<string, object>() { ["async"] = !wait });
+            return await PutRequestAsync<object>(
+                "/server", 
+                new Dictionary<string, object>() { ["async"] = !wait, ["reload"] = true }, 
+                new Dictionary<string, object>() { }
+            );
         }
 
         /// <summary>
