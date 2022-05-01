@@ -11,10 +11,12 @@ namespace KoalaBot.Ticker
 	class TickerStarwatch : ITickable
 	{
         public StarwatchClient Client { get; }
+        private Logging.Logger Logger { get; set; }
 
         public TickerStarwatch(StarwatchClient client)
         {
             this.Client = client;
+            Logger = new Logging.Logger("TICK");
         }
 
 		public async Task<DiscordActivity> GetActivityAsync(TickerManager manager)
@@ -45,9 +47,16 @@ namespace KoalaBot.Ticker
 
                 return new DiscordActivity(text, ActivityType.Watching);
             }
+
             catch (Exception e)
             {
-                throw e;
+                // Typically either SSL or target machine refused.
+                Logger.LogError(e.Message);
+#if DEBUG
+                return new DiscordActivity("[Debug] Starwatch offline.", ActivityType.Watching);
+#else
+                return new DiscordActivity("Starwatch offline.", ActivityType.Watching);
+#endif
             }
         }
 	}
