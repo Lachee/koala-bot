@@ -30,8 +30,6 @@ namespace KoalaBot.Ticker
             timer = new Timer() { AutoReset = true };
             timer.Elapsed += TimerElapsed;
             timer.Start();
-
-            bot.Discord.Ready += async (client, args) => await Tick();
         }
 
         private async void TimerElapsed(object sender, ElapsedEventArgs e) => await Tick();
