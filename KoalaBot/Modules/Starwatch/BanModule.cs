@@ -12,6 +12,7 @@ using KoalaBot.Starwatch.Entities;
 using KoalaBot.Starwatch.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -62,6 +63,13 @@ namespace KoalaBot.Modules.Starwatch
 
                 if (string.IsNullOrWhiteSpace(reason))
                     throw new ArgumentNullException("reason");
+
+                IPAddress parsedIp = null;
+                if (!IPAddress.TryParse(ip, out parsedIp))
+                {
+                    await ctx.ReplyAsync($"{ctx.User.Mention}: Cannot ban an invalid IP address - '{ip}'");
+                    return;
+                }
 
                 //Fetch the response
                 await ctx.ReplyWorkingAsync();
