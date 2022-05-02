@@ -70,6 +70,49 @@ namespace KoalaBot.Modules.Starwatch
                 await ctx.ReplyAsync("Added it.");
             }
 
+            [Command("enable")]
+            [Permission("sw.announce.enable")]
+            [Description("Enables an announcement.")]
+            public async Task Task(CommandContext ctx,
+                [Description("The ID of the announcement")] int id)
+            {
+                await ctx.ReplyWorkingAsync();
+
+                AnnouncementPatch patch = new AnnouncementPatch
+                {
+                    Enabled = true
+                };
+
+                var response = await Starwatch.PutAnnouncementAsync(patch);
+
+                if (response.Status != RestStatus.OK)
+                    throw new RestResponseException(response);
+
+                await ctx.ReplyAsync($"{ctx.User.Mention}: Enabled announcement #{id}");
+            }
+
+            [Command("disable")]
+            [Permission("sw.announce.disable")]
+            [Description("Disables an announcement.")]
+            public async Task DisableAnnouncement(CommandContext ctx,
+                [Description("The ID of the announcement")] int id)
+            {
+                await ctx.ReplyWorkingAsync();
+
+                AnnouncementPatch patch = new AnnouncementPatch
+                {
+                    Enabled = false,
+                    Id = id
+                };
+
+                var response = await Starwatch.PutAnnouncementAsync(patch);
+
+                if (response.Status != RestStatus.OK)
+                    throw new RestResponseException(response);
+
+                await ctx.ReplyAsync($"{ctx.User.Mention}: Disabled announcement #{id}");
+            }
+
             [Command("get")]
             [Permission("sw.announcement.view")]
             [Description("Checks an announcement")]
