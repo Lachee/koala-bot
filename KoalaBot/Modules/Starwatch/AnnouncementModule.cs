@@ -77,7 +77,7 @@ namespace KoalaBot.Modules.Starwatch
             [Command("enable")]
             [Permission("sw.announce.enable")]
             [Description("Enables an announcement.")]
-            public async Task Task(CommandContext ctx,
+            public async Task EnableAnnouncement(CommandContext ctx,
                 [Description("The ID of the announcement")] int id)
             {
                 await ctx.ReplyWorkingAsync();
@@ -143,9 +143,9 @@ namespace KoalaBot.Modules.Starwatch
             [Command("setinterval"), Aliases("setint", "timer", "settimer")]
             [Permission("sw.announce.setinterval")]
             [Description("Sets an announcement's timer interval")]
-            public async Task SetAnnouncementMessage(CommandContext ctx,
+            public async Task SetAnnouncementInterval(CommandContext ctx,
                 [Description("The ID of the announcement")] int id,
-                [Description("The interval of the announcement in seconds")] int interval)
+                [Description("The interval of the announcement in seconds")] double interval)
             {
                 await ctx.ReplyWorkingAsync();
 
@@ -166,7 +166,7 @@ namespace KoalaBot.Modules.Starwatch
             [Command("get")]
             [Permission("sw.announcement.view")]
             [Description("Checks an announcement")]
-            public async Task BanPlayer(CommandContext ctx,
+            public async Task ViewAnnouncement(CommandContext ctx,
                 [Description("The id of the announcement")] long id)
             {
                 //Fetch the response
