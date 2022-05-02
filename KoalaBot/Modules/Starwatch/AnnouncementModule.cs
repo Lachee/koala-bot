@@ -113,6 +113,52 @@ namespace KoalaBot.Modules.Starwatch
                 await ctx.ReplyAsync($"{ctx.User.Mention}: Disabled announcement #{id}");
             }
 
+            [Command("setmessage"), Aliases("setmsg")]
+            [Permission("sw.announce.setmessage")]
+            [Description("Sets an announcement's message")]
+            public async Task SetAnnouncementMessage(CommandContext ctx,
+                [Description("The ID of the announcement")] int id,
+                [Description("The message of the announcement")] string message)
+            {
+                await ctx.ReplyWorkingAsync();
+
+                AnnouncementPatch patch = new AnnouncementPatch
+                {
+                    Message = message,
+                    Id = id
+                };
+
+                var response = await Starwatch.PutAnnouncementAsync(patch);
+
+                if (response.Status != RestStatus.OK)
+                    throw new RestResponseException(response);
+
+                await ctx.ReplyAsync($"{ctx.User.Mention}: Set announcement message for announcement #{id}");
+            }
+
+            [Command("setinterval"), Aliases("setint", "timer", "settimer")]
+            [Permission("sw.announce.setinterval")]
+            [Description("Sets an announcement's timer interval")]
+            public async Task SetAnnouncementMessage(CommandContext ctx,
+                [Description("The ID of the announcement")] int id,
+                [Description("The interval of the announcement in seconds")] int interval)
+            {
+                await ctx.ReplyWorkingAsync();
+
+                AnnouncementPatch patch = new AnnouncementPatch
+                {
+                    Interval = interval,
+                    Id = id
+                };
+
+                var response = await Starwatch.PutAnnouncementAsync(patch);
+
+                if (response.Status != RestStatus.OK)
+                    throw new RestResponseException(response);
+
+                await ctx.ReplyAsync($"{ctx.User.Mention}: Set announcement interval for announcement #{id}");
+            }
+
             [Command("get")]
             [Permission("sw.announcement.view")]
             [Description("Checks an announcement")]
