@@ -163,7 +163,7 @@ namespace KoalaBot.Modules.Starwatch
                 await ctx.ReplyAsync($"{ctx.User.Mention}: Set announcement interval for announcement #{id}");
             }
 
-            [Command("get")]
+            [Command("view"), Aliases("get")]
             [Permission("sw.announcement.view")]
             [Description("Checks an announcement")]
             public async Task ViewAnnouncement(CommandContext ctx,
