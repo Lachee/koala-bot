@@ -48,7 +48,7 @@ namespace KoalaBot.Modules.Starwatch
                     throw new RestResponseException(response);
 
                 //Build the response                
-                await ctx.ReplyAsync("Deleted it.");
+                await ctx.ReplyAsync($"{ctx.User.Mention}: Deleted announcement #{id}");
             }
 
             [Command("add"), Aliases("+")]
@@ -67,7 +67,11 @@ namespace KoalaBot.Modules.Starwatch
                     throw new RestResponseException(response);
 
                 //Build the response
-                await ctx.ReplyAsync("Added it.");
+                await ctx.ReplyAsync(
+                    $"{ctx.User.Mention}: Added new announcement." +
+                    $"\n**Message**: '{message}'" +
+                    $"\n**Enabled**: '{enabled.ToString().ToLowerInvariant()}'" +
+                    $"\n**Interval**: '{interval}' seconds");
             }
 
             [Command("enable")]
@@ -174,7 +178,7 @@ namespace KoalaBot.Modules.Starwatch
                 //404, the world doesn't exist
                 if (response.Status == RestStatus.ResourceNotFound)
                 {
-                    await ctx.ReplyAsync(id + " is not a valid announcement.");
+                    await ctx.ReplyAsync($"{ctx.User.Mention}: Announcement #{id} doesn't exist.");
                     return;
                 }
 
