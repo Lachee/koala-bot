@@ -221,6 +221,24 @@ namespace KoalaBot.Starwatch
 
         #endregion
 
+        public async Task<Response<Announcement>> GetAnnouncementAsync(long id) => await GetRequestAsync<Announcement>($"/announcement?id={id}");
+
+        public async Task<Response<int>> GetAnnouncementCountAsync() => await GetRequestAsync<int>($"/announcement");
+
+        public async Task<Response<object>> DeleteAnnouncementAsync(long id) => await DeleteRequestAsync<object>($"/announcement?id={id}");
+
+        public async Task<Response<object>> PostAnnouncementAsync(string message, bool enabled, double interval) => await PostRequestAsync<object>($"/announcement?message={message}&enabled={enabled}&interval={interval}");
+
+        public async Task<Response<Announcement>> PutAnnouncementAsync (AnnouncementPatch announcement)
+        {
+            if (announcement is null)
+                throw new ArgumentNullException(nameof(announcement));
+
+            return await PutRequestAsync<Announcement>($"/announcement",
+                new Dictionary<string, object> { },
+                announcement);
+        }
+
         /// <summary>
         /// Gets the statistics of the server
         /// </summary>
