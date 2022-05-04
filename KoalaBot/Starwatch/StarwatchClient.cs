@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using KoalaBot.Starwatch.Responses;
 
 namespace KoalaBot.Starwatch
 {
@@ -202,6 +203,21 @@ namespace KoalaBot.Starwatch
         public async Task<Response<Account>> UpdateAccountAsync(string name, Account account) => await PutRequestAsync<Account>($"/account/{name}", payload: account);
 
         public async Task<Response<bool>> DeleteAccountAsync(string name) => await DeleteRequestAsync<bool>($"/account/{name}");
+
+        public async Task<Response<PlayerKickResponse>> KickPlayerAsync(Player player, string reason = null, int? duration = null)
+        {
+            string reasonParam = string.Empty;
+            string durationParam = string.Empty;
+
+            if (!(reason is null))
+                reasonParam = $"&reason={HttpUtility.UrlEncode(reason)}";
+
+            if (!(duration is null))
+                durationParam = $"&duration={duration}";
+
+            string url = $"/player/kick?{player.EncodeAsParameters()}{reasonParam}{durationParam}";
+            return await DeleteRequestAsync<PlayerKickResponse>(url);
+        }
 
         #endregion
 
