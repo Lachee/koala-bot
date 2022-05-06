@@ -245,6 +245,8 @@ namespace KoalaBot.Starwatch
         /// <returns></returns>
         public async Task<Response<Statistics>> GetStatisticsAsync() => await GetRequestAsync<Statistics>("/server/statistics");
 
+        public async Task<Response<string>> GetVersionAsync() => await GetRequestAsync<string>("/version");
+
         #region Request Fetching
         /// <summary>
         /// Sends a GET request to a specified endpoint.

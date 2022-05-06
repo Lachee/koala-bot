@@ -195,6 +195,32 @@ namespace KoalaBot.Modules.Starwatch
             await ctx.ReplyAsync("**Content Tagged:**\n```\n" + tt.Content + "\n```\n**Breakdown:**\n```\n" + string.Join('\n', tt.Tags.Select(t => t.color + ": " + t.text + "")) + "\n```");
         }
 
+        [Command("version")]
+        [Description("Gets the version of Starwatch")]
+        [Permission("sw.version")]
+        public async Task GetVersion(CommandContext ctx)
+        {
+            await ctx.ReplyWorkingAsync();
+            try
+            {
+                var resp = await Starwatch.GetVersionAsync();
+
+                if (resp.Status == RestStatus.OK)
+                {
+                    await ctx.ReplyAsync(resp.Payload);
+                    return;
+                }
+                else
+                {
+                    await ctx.ReplyAsync($"{ctx.User.Mention}: Unable to get the version - {resp.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ctx.ReplyAsync("Old version.");
+            }
+        }
+
         [Command("upload")]
         [Description("Uploads a world.")]
         [RequireOwner]
