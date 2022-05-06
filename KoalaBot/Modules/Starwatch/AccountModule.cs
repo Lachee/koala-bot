@@ -65,6 +65,21 @@ namespace KoalaBot.Modules.Starwatch
                 await ctx.ReplyReactionAsync(true);
             }
 
+            [Command("changepass")]
+            [Permission("sw.acc.changepass")]
+            [Description("Changes an account password")]
+
+            public async Task ChangeAccountPassword(CommandContext ctx, [Description("The name of the account to enable")] string account, [Description("Pass")] string password)
+            {
+                await ctx.ReplyWorkingAsync();
+                var response = await Starwatch.UpdateAccountAsync(account, new Account() { Password = password });
+
+                if (response.Status != RestStatus.OK)
+                    throw new RestResponseException(response);
+                
+                await ctx.ReplyDeleteAsync($"{ctx.User.Mention}: Changed password of \"{account}\"");
+            }
+
             [Command("create")]
             [Permission("sw.acc.create")]
             [Description("Creates a normal account")]
