@@ -51,7 +51,7 @@ namespace KoalaBot.Modules.Starwatch
                 await ctx.ReplyReactionAsync(response.Payload);
             }
 
-            [Command("create"), Aliases("add", "+", "ban")]
+            [Command("create"), Aliases("add", "+", "ban", "ip")]
             [Permission("sw.ban.ip")]
             [Description("Creates a new ban")]
             public async Task BanPlayer(CommandContext ctx,
