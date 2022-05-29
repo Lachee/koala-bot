@@ -87,7 +87,7 @@ namespace KoalaBot.Starwatch.Entities
             Type = response.Type;
             ExecuteTime = response.ExecuteTime;
 
-            if (response.Payload != null)
+            if (response.Payload != null && response.Status != RestStatus.ResourceNotFound)
                 Payload = response.Payload.ToObject<T>();
         }
     }
